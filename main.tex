@@ -1,14 +1,694 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
 
-\title{Metodi matematici}
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=3cm}
+
+\theoremstyle{definition}
+\newtheorem{definizione}{Definizione}[section]
+\newtheorem{osservazione}{Osservazione}[section]
+
+\theoremstyle{remark}
+\newtheorem*{intuizione}{Intuizione geometrica/numerica}
+
+\title{\textbf{Approssimazione Numerica di Integrali}\\[0.5em]
+\large Guida di Studio ---
+Metodi Matematici e Numerici per Ingegneria Informatica}
 \author{Fausto Vanella}
-\date{June 2026}
+\date{Giugno 2026}
 
 \begin{document}
 
 \maketitle
+\tableofcontents
+\newpage
 
-\section{Introduction}
+% =============================================================================
+\section{Formula di Quadratura}
+% =============================================================================
+
+\subsection{Definizione e motivazione}
+
+Quando si parla di \textbf{formula di quadratura}, ci si riferisce
+all'approssimazione numerica di un integrale definito.
+Considerato l'integrale di una funzione $f(x)$ sull'intervallo $[a,b]$,
+è possibile approssimarlo come somma pesata dei valori di $f$ in un insieme
+finito di punti, più un termine di errore residuo:
+
+\begin{equation}
+  \int_a^b f(x)\,dx = \sum_{i=0}^{n} \omega_i\,f(x_i) + R_n
+  \label{eq:quadratura}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $\{x_i\}_{i=0}^{n}$ sono gli $n+1$ \textbf{nodi} di quadratura:
+        i punti dell'intervallo $[a,b]$ nei quali la funzione $f$ viene valutata;
+  \item $\{\omega_i\}_{i=0}^{n}$ sono i \textbf{pesi} di quadratura:
+        coefficienti numerici che determinano quanto ciascun valore $f(x_i)$
+        contribuisce all'approssimazione;
+  \item $R_n$ è il \textbf{resto} (o errore di quadratura):
+        lo scarto tra il valore esatto dell'integrale e l'approssimazione.
+\end{itemize}
+
+\begin{definizione}[Formula di Quadratura Numerica]
+Una qualunque formula della forma~\eqref{eq:quadratura} si dice di
+\textbf{quadratura numerica}: essa stima l'integrale definito di $f(x)$
+sull'intervallo $[a,b]$ senza richiedere il calcolo esplicito della
+primitiva di $f$.
+\end{definizione}
+
+\subsection{Grado di precisione}
+
+\begin{definizione}[Grado di Precisione]
+Il \textbf{grado di precisione} $p$ di una formula di quadratura è la
+misura della sua accuratezza. In particolare, si dice che la formula ha
+grado di precisione $p$ se:
+\begin{enumerate}
+  \item applicandola a qualsiasi polinomio di grado $\le p$ fornisce il
+        risultato esatto (ovvero $R_n = 0$);
+  \item esiste almeno un polinomio di grado $p+1$ per cui la formula
+        \emph{non} è esatta.
+\end{enumerate}
+\end{definizione}
+
+\subsection{Formule di tipo interpolatorio}
+
+Le formule di quadratura che studieremo sono di tipo \textbf{interpolatorio}.
+L'idea fondamentale è: anziché integrare direttamente $f(x)$,
+la si sostituisce con un polinomio $P_n(x)$ di grado $\le n$ che passa
+per gli $n+1$ nodi, e si integra quest'ultimo.
+L'errore commesso è l'integrale del termine di errore dell'interpolazione
+polinomiale $E_n(x)$.
+
+Formalmente, dato che $f(x) = P_n(x) + E_n(x)$ per costruzione, possiamo
+scrivere:
+\begin{equation}
+  \int_a^b f(x)\,dx
+  = \underbrace{\int_a^b P_n(x)\,dx}_{\text{parte approssimata}}
+  + \underbrace{\int_a^b E_n(x)\,dx}_{R_n}
+  \label{eq:decomposizione}
+\end{equation}
+
+\noindent dove $P_n(x)$ è il polinomio interpolante passante per gli
+$n+1$ nodi $x_0, x_1, \ldots, x_n$.
+
+La formula risulta \textbf{esatta} se e solo se il resto si azzera:
+\[
+  R_n = \int_a^b E_n(x)\,dx = 0
+\]
+
+% =============================================================================
+\section{Newton-Cotes: Nodi Equidistanti}
+% =============================================================================
+
+\subsection{Impostazione}
+
+Le \textbf{formule di Newton-Cotes} sono formule interpolatorie in cui i
+nodi sono \textbf{equidistanti}, con il primo nodo coincidente con
+l'estremo sinistro $a$ e l'ultimo con l'estremo destro $b$:
+\[
+  x_0 = a, \quad x_n = b, \quad
+  x_i = x_0 + i\,h \quad \text{per } i = 0,1,\ldots,n
+\]
+
+\noindent dove $h = \dfrac{b-a}{n}$ è il \textbf{passo di discretizzazione},
+cioè la distanza uniforme tra nodi consecutivi.
+
+\begin{intuizione}
+Suddividere uniformemente $[a,b]$ semplifica i calcoli: la distanza tra
+qualsiasi coppia di nodi $x_i$ e $x_j$ è un multiplo intero di $h$.
+Questo permette di esprimere tutte le differenze in forma compatta e di
+ricondurre i polinomi di Lagrange (e i relativi integrali) a espressioni
+polinomiali in una variabile adimensionale $t$.
+\end{intuizione}
+
+\subsection{Formule per le differenze tra nodi}
+
+Prendendo un punto generico $x = x_0 + t h$
+(dove $t$ è un parametro reale), calcoliamo la differenza tra $x$ e il
+generico nodo $x_i = x_0 + i\,h$:
+\begin{equation}
+  x - x_i = (x_0 + th) - (x_0 + ih) = h(t-i)
+  \label{eq:diff-x-xi}
+\end{equation}
+
+Analogamente, la differenza tra due nodi $x_i$ e $x_j$ è:
+\begin{equation}
+  x_i - x_j = (x_0 + ih) - (x_0 + jh) = h(i-j)
+  \label{eq:diff-xi-xj}
+\end{equation}
+
+Queste due relazioni sono fondamentali: ci permetteranno, nella Sezione~3,
+di cancellare sistematicamente i fattori $h$ nei polinomi di Lagrange e di
+ricavare un'espressione chiusa per i pesi $\omega_i$.
+
+% =============================================================================
+\section{Derivazione dei Pesi tramite Polinomi di Lagrange}
+% =============================================================================
+
+\subsection{Integrale come combinazione di integrali di Lagrange}
+
+Supponendo che il polinomio approssimante $P_n(x)$ nella
+decomposizione~\eqref{eq:decomposizione} sia il polinomio di Lagrange
+passante per gli $n+1$ nodi:
+\begin{equation}
+  P_n(x) = \sum_{i=0}^{n} l_i(x)\,f(x_i)
+  \label{eq:lagrange-pn}
+\end{equation}
+
+\noindent dove i \textbf{polinomi fondamentali di Lagrange} $l_i(x)$ sono
+definiti come:
+\begin{equation}
+  l_i(x) = \frac{(x-x_0)\cdots(x-x_{i-1})(x-x_{i+1})\cdots(x-x_n)}
+                 {(x_i-x_0)\cdots(x_i-x_{i-1})(x_i-x_{i+1})\cdots(x_i-x_n)}
+  \label{eq:lagrange-li}
+\end{equation}
+
+\noindent e soddisfano la proprietà $l_i(x_j) = \delta_{ij}$
+(cioè: $l_i(x_i) = 1$ e $l_i(x_j) = 0$ per $j \ne i$).
+
+Sostituendo~\eqref{eq:lagrange-pn} nell'integrale e sfruttando la
+linearità dell'integrazione (ovvero lo scambio tra $\int$ e $\sum$):
+\[
+  \int_a^b f(x)\,dx
+  \approx \int_a^b \sum_{i=0}^{n} l_i(x)\,f(x_i)\,dx
+  = \sum_{i=0}^{n} f(x_i)\int_a^b l_i(x)\,dx
+\]
+
+\noindent Poiché $f(x_i)$ è un valore costante rispetto alla variabile di
+integrazione $x$, può uscire dall'integrale.
+Ne consegue direttamente che i \textbf{pesi di quadratura} sono:
+\begin{equation}
+  \boxed{\omega_i = \int_a^b l_i(x)\,dx = \int_{x_0}^{x_n} l_i(x)\,dx}
+  \label{eq:pesi}
+\end{equation}
+
+I pesi dipendono solo dalla scelta dei nodi, non dalla funzione $f$:
+questo è il vantaggio delle formule interpolatorie.
+
+\subsection{Cambio di variabile per il calcolo esplicito dei pesi}
+
+Per calcolare analiticamente i pesi~\eqref{eq:pesi}, effettuiamo il
+cambio di variabile:
+\[
+  x = x_0 + t\,h \;\Longrightarrow\; dx = h\,dt
+\]
+
+Gli estremi di integrazione si trasformano come segue:
+\begin{align*}
+  x = a = x_0 &\;\Rightarrow\;
+    t = \frac{x - x_0}{h} = \frac{x_0 - x_0}{h} = 0 \\[4pt]
+  x = b = x_n &\;\Rightarrow\;
+    t = \frac{x - x_0}{h} = \frac{x_n - x_0}{h} = \frac{n\,h}{h} = n
+\end{align*}
+
+\noindent Ora, usando le relazioni~\eqref{eq:diff-x-xi}
+e~\eqref{eq:diff-xi-xj}, riscriviamo i polinomi di Lagrange in funzione
+di $t$. Nel prodotto~\eqref{eq:lagrange-li}, ogni fattore diventa:
+\[
+  \frac{x - x_j}{x_i - x_j} = \frac{h(t-j)}{h(i-j)} = \frac{t-j}{i-j}
+\]
+
+\noindent I fattori $h$ al numeratore e al denominatore si cancellano
+esattamente. Quindi:
+\[
+  l_i(x) = \prod_{\substack{j=0\\j\ne i}}^{n} \frac{t-j}{i-j}
+\]
+
+Sostituendo nell'espressione del peso:
+\begin{align*}
+  \omega_i
+  &= \int_{x_0}^{x_n} l_i(x)\,dx
+   = h \int_0^n \prod_{\substack{j=0\\j\ne i}}^{n} \frac{t-j}{i-j}\,dt
+\end{align*}
+
+\noindent Poiché i termini $(i-j)$ al denominatore sono costanti rispetto
+a $t$, si raccolgono fuori dall'integrale:
+
+\begin{equation}
+  \boxed{
+    \omega_i = h \int_0^n \prod_{\substack{j=0\\j\ne i}}^{n}
+    \frac{t-j}{i-j}\,dt
+  }
+  \label{eq:pesi-t}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $h = (b-a)/n$ è il passo di discretizzazione;
+  \item il prodotto esclude il termine $j = i$ (che darebbe divisione per
+        zero al denominatore);
+  \item l'integrale è calcolato nella variabile $t \in [0, n]$,
+        corrispondente a $x \in [x_0, x_n] = [a,b]$.
+\end{itemize}
+
+% =============================================================================
+\section{Newton-Cotes Semplici}
+% =============================================================================
+
+\subsection{Formula del Trapezio (Newton-Cotes a 2 Nodi)}
+
+La \textbf{formula del trapezio} corrisponde a Newton-Cotes con $n = 1$:
+si utilizzano soltanto 2 nodi, i due estremi dell'intervallo:
+\[
+  x_0 = a, \quad x_1 = b, \quad h = b - a
+\]
+
+\subsubsection*{Calcolo dei pesi}
+
+Con $n = 1$, la formula~\eqref{eq:pesi-t} richiede di integrare in
+$t \in [0, 1]$.
+
+\medskip\noindent
+\textbf{Peso $\omega_0$} (associato al nodo $x_0 = a$, dove $l_0$
+vale 1 e si azzera in $x_1$):
+\begin{align*}
+  \omega_0
+  &= h \int_0^1 \frac{t - 1}{0 - 1}\,dt
+   = h \int_0^1 \frac{t-1}{-1}\,dt
+   = h \int_0^1 (1-t)\,dt \\
+  &= h \left[t - \frac{t^2}{2}\right]_0^1
+   = h \left(1 - \frac{1}{2}\right)
+   = \frac{h}{2}
+\end{align*}
+
+\noindent
+\textbf{Peso $\omega_1$} (associato al nodo $x_1 = b$):
+\begin{align*}
+  \omega_1
+  &= h \int_0^1 \frac{t - 0}{1 - 0}\,dt
+   = h \int_0^1 t\,dt
+   = h \left[\frac{t^2}{2}\right]_0^1
+   = \frac{h}{2}
+\end{align*}
+
+\noindent I due pesi sono uguali tra loro e coincidono con la metà del
+passo: ciascun estremo contribuisce in egual misura all'approssimazione.
+
+\subsubsection*{Formula}
+
+\begin{equation}
+  \boxed{
+    \int_a^b f(x)\,dx
+    \approx \frac{h}{2}\bigl[f(x_0) + f(x_1)\bigr]
+    = \frac{b-a}{2}\bigl[f(a) + f(b)\bigr]
+  }
+  \label{eq:trapezio}
+\end{equation}
+
+\begin{intuizione}
+Questa formula coincide esattamente con la formula per l'area di un
+trapezio ``capovolto'': $f(a)$ e $f(b)$ sono le due basi parallele,
+$h = b - a$ è l'altezza.
+Si approssima quindi l'area sottesa alla curva $f(x)$ con l'area del
+trapezio delimitato dalla retta secante passante per i due punti
+estremi $(a,f(a))$ e $(b,f(b))$.
+\end{intuizione}
+
+\subsubsection*{Errore della formula del trapezio}
+
+Il termine di errore dell'interpolazione polinomiale con $n+1$ nodi vale:
+\[
+  E_n(x) = \prod_{i=0}^{n}(x - x_i)\,\frac{f^{(n+1)}(\xi)}{(n+1)!}
+\]
+
+\noindent dove $\xi = \xi(x)$ è un punto (incognito) appartenente
+all'intervallo $[a,b]$.
+Integrando su $[a,b]$ (e assumendo che il segno di
+$f^{(n+1)}$ non cambi, per poter fattorizzare), il resto è:
+\begin{equation}
+  R_n = \int_a^b E_n(x)\,dx
+      = \frac{f^{(n+1)}(\xi)}{(n+1)!}
+        \int_a^b (x-x_0)(x-x_1)\cdots(x-x_n)\,dx
+  \label{eq:errore-gen}
+\end{equation}
+
+\noindent Per $n = 1$ (due nodi $x_0 = a$, $x_1 = b$):
+\[
+  R_1 = \frac{f''(\xi)}{2!}\int_a^b (x - a)(x - b)\,dx
+      = \frac{f''(\xi)}{2}\int_a^b (x-a)(x-b)\,dx
+\]
+
+\noindent Calcoliamo l'integrale con la sostituzione $u = x - a$
+(da cui $x - b = u - h$, $du = dx$, estremi $0 \to h$):
+\begin{align*}
+  \int_a^b (x-a)(x-b)\,dx
+  &= \int_0^h u(u - h)\,du
+   = \int_0^h (u^2 - hu)\,du \\
+  &= \left[\frac{u^3}{3} - \frac{h\,u^2}{2}\right]_0^h
+   = \frac{h^3}{3} - \frac{h^3}{2}
+   = h^3\!\left(\frac{2-3}{6}\right)
+   = -\frac{h^3}{6}
+\end{align*}
+
+\noindent Quindi:
+\[
+  R_1 = \frac{f''(\xi)}{2} \cdot \left(-\frac{h^3}{6}\right)
+\]
+
+\begin{equation}
+  \boxed{R_1 = -\frac{h^3}{12}\,f''(\xi)}
+  \label{eq:errore-trapezio}
+\end{equation}
+
+\noindent dove $\xi \in (a,b)$.
+Poiché il segno del resto è opposto a quello di $f''(\xi)$:
+\begin{itemize}
+  \item se $f$ è \textbf{convessa} ($f'' > 0$): la formula del trapezio
+        \emph{sovrastima} l'integrale reale;
+  \item se $f$ è \textbf{concava} ($f'' < 0$): la formula del trapezio
+        \emph{sottostima} l'integrale reale.
+\end{itemize}
+
+Il \textbf{grado di precisione} della formula del trapezio è $p = 1$:
+la formula è esatta per tutte le funzioni polinomiali di grado $\le 1$
+(funzioni costanti e rette), ma non per il polinomio $x^2$.
+
+\subsection{Formula di Cavalieri-Simpson (Newton-Cotes a 3 Nodi)}
+
+La \textbf{formula di Cavalieri-Simpson} corrisponde a Newton-Cotes con
+$n = 2$: si usano 3 nodi equidistanti, compresi gli estremi e il punto
+medio dell'intervallo:
+\[
+  x_0 = a, \quad
+  x_1 = \frac{a+b}{2}, \quad
+  x_2 = b, \quad
+  h = \frac{b-a}{2}
+\]
+
+\noindent dove $h$ è ora la metà dell'ampiezza dell'intervallo.
+
+\subsubsection*{Calcolo dei pesi}
+
+Con $n = 2$, la formula~\eqref{eq:pesi-t} richiede di integrare in
+$t \in [0, 2]$.
+
+\medskip\noindent
+\textbf{Peso $\omega_0$} (associato a $x_0$):
+\begin{align*}
+  \omega_0
+  &= h\int_0^2 \frac{(t-1)(t-2)}{(0-1)(0-2)}\,dt
+   = h\int_0^2 \frac{(t-1)(t-2)}{(-1)(-2)}\,dt
+   = \frac{h}{2}\int_0^2 (t-1)(t-2)\,dt \\
+  &= \frac{h}{2}\int_0^2 (t^2 - 3t + 2)\,dt
+   = \frac{h}{2}\left[\frac{t^3}{3} - \frac{3t^2}{2} + 2t\right]_0^2 \\
+  &= \frac{h}{2}\!\left(\frac{8}{3} - 6 + 4\right)
+   = \frac{h}{2}\!\left(\frac{8}{3} - 2\right)
+   = \frac{h}{2} \cdot \frac{8 - 6}{3}
+   = \frac{h}{2} \cdot \frac{2}{3}
+   = \frac{h}{3}
+\end{align*}
+
+\noindent
+\textbf{Peso $\omega_1$} (associato a $x_1$, il punto medio):
+\begin{align*}
+  \omega_1
+  &= h\int_0^2 \frac{(t-0)(t-2)}{(1-0)(1-2)}\,dt
+   = h\int_0^2 \frac{t(t-2)}{1 \cdot (-1)}\,dt
+   = -h\int_0^2 (t^2 - 2t)\,dt \\
+  &= -h\left[\frac{t^3}{3} - t^2\right]_0^2
+   = -h\!\left(\frac{8}{3} - 4\right)
+   = -h \cdot \frac{8 - 12}{3}
+   = -h \cdot \left(-\frac{4}{3}\right)
+   = \frac{4h}{3}
+\end{align*}
+
+\noindent
+\textbf{Peso $\omega_2$} (associato a $x_2$):
+\begin{align*}
+  \omega_2
+  &= h\int_0^2 \frac{(t-0)(t-1)}{(2-0)(2-1)}\,dt
+   = \frac{h}{2}\int_0^2 t(t-1)\,dt
+   = \frac{h}{2}\int_0^2 (t^2 - t)\,dt \\
+  &= \frac{h}{2}\left[\frac{t^3}{3} - \frac{t^2}{2}\right]_0^2
+   = \frac{h}{2}\!\left(\frac{8}{3} - 2\right)
+   = \frac{h}{2} \cdot \frac{2}{3}
+   = \frac{h}{3}
+\end{align*}
+
+\noindent I pesi risultanti sono $(\omega_0,\omega_1,\omega_2) =
+(h/3,\; 4h/3,\; h/3)$.
+Il nodo centrale $x_1$ riceve un peso quattro volte maggiore degli
+estremi: questo riflette il fatto che, per catturare la curvatura di
+$f$, il valore al centro è più ``informativo'' dei valori agli estremi.
+
+\subsubsection*{Formula}
+
+\begin{equation}
+  \boxed{
+    \int_a^b f(x)\,dx
+    \approx \frac{h}{3}\bigl[f(x_0) + 4f(x_1) + f(x_2)\bigr]
+    = \frac{b-a}{6}\left[f(a) + 4f\!\left(\tfrac{a+b}{2}\right) + f(b)\right]
+  }
+  \label{eq:simpson}
+\end{equation}
+
+\begin{intuizione}
+Rispetto al trapezio, qui $f$ viene approssimata con una \emph{parabola}
+(polinomio di grado 2) passante per i tre punti
+$(x_0,f(x_0))$, $(x_1,f(x_1))$, $(x_2,f(x_2))$.
+Il peso quadruplo al centro nasce dall'integrale di $l_1(t)$, che è
+una parabola con vertice ampio: la parabola interpolante ``piega'' verso
+il punto medio catturando la curvatura di $f$ in modo molto più fedele
+di una retta.
+\end{intuizione}
+
+% =============================================================================
+\section{Formule di Quadratura Composte}
+% =============================================================================
+
+\subsection{Motivazione}
+
+Le formule semplici viste finora (trapezio, Cavalieri-Simpson) diventano
+inaccurate quando la funzione $f$ è molto variabile su $[a,b]$ o quando
+l'intervallo è ampio, perché l'errore dipende dall'ampiezza $h = b - a$
+elevata a una potenza alta.
+L'idea delle \textbf{formule composite} è:
+\begin{enumerate}
+  \item suddividere $[a,b]$ in $n$ sottointervalli più piccoli;
+  \item applicare la formula semplice su ciascun sottointervallo;
+  \item sommare i contributi.
+\end{enumerate}
+
+Poiché su ogni sottointervallo il passo locale $h = (b-a)/n$ diventa
+piccolo al crescere di $n$, l'errore totale diminuisce rapidamente.
+
+\subsection{Trapezio Composto}
+
+\subsubsection*{Impostazione}
+
+Dati $n+1$ nodi $\{x_0, x_1, \ldots, x_n\}$ equidistanti in $[a,b]$
+con passo $h = (b-a)/n$, suddividiamo l'intervallo nei sottointervalli:
+\[
+  T_k = [x_k, x_{k+1}], \quad k = 0, 1, \ldots, n-1
+\]
+
+\noindent In particolare: $T_1 = [x_0,x_1]$, $T_2 = [x_1,x_2]$, \ldots,
+$T_n = [x_{n-1},x_n]$.
+
+\subsubsection*{Somma dei trapezi}
+
+Applicando la formula del trapezio~\eqref{eq:trapezio} su ciascun
+sottointervallo $T_k$ (larghezza $h$):
+\[
+  \int_{x_k}^{x_{k+1}} f(x)\,dx \approx \frac{h}{2}\bigl[f(x_k)+f(x_{k+1})\bigr]
+\]
+
+Sommando su tutti gli $n$ sottointervalli:
+\begin{align*}
+  \tilde{I} &\approx
+    \frac{h}{2}[f(x_0)+f(x_1)]
+  + \frac{h}{2}[f(x_1)+f(x_2)]
+  + \cdots
+  + \frac{h}{2}[f(x_{n-1})+f(x_n)]
+\end{align*}
+
+Raccogliendo i termini: ogni nodo interno $x_i$ (con $1 \le i \le n-1$)
+compare due volte (come estremo destro di $T_{i-1}$ e come estremo
+sinistro di $T_i$), mentre $x_0$ e $x_n$ compaiono una sola volta.
+Quindi:
+
+\begin{equation}
+  \boxed{
+    \tilde{I} = \frac{h}{2}\!\left(f(x_0) + 2\sum_{i=1}^{n-1} f(x_i) + f(x_n)\right)
+  }
+  \label{eq:trapezio-comp}
+\end{equation}
+
+\subsubsection*{Errore del trapezio composto}
+
+L'errore su ogni sottointervallo $T_k$ è, dalla formula~\eqref{eq:errore-trapezio}:
+\[
+  R_k = -\frac{h^3}{12}\,f''(\xi_k), \quad \xi_k \in (x_k, x_{k+1})
+\]
+
+\noindent Sostituendo $h = (b-a)/n$, si ha $h^3 = (b-a)^3/n^3$, e quindi
+l'errore su ogni singolo $T_k$ è:
+\[
+  R_k = -\frac{(b-a)^3}{12n^3}\,f''(\xi_k)
+\]
+
+L'errore totale è la somma su tutti gli $n$ sottointervalli:
+\begin{align*}
+  R &= \sum_{k=0}^{n-1} R_k
+     = \sum_{k=0}^{n-1} \left(-\frac{(b-a)^3}{12n^3}\,f''(\xi_k)\right)
+     = -\frac{(b-a)^3}{12n^3}\sum_{k=0}^{n-1} f''(\xi_k)
+\end{align*}
+
+\noindent Per il teorema del valor medio applicato alla somma di $n$
+valori di $f''$ in punti dell'intervallo, esiste $\xi \in (a,b)$ tale che:
+\[
+  \sum_{k=0}^{n-1} f''(\xi_k) \approx n\,f''(\xi)
+\]
+
+\noindent Di conseguenza:
+\[
+  R \approx -\frac{(b-a)^3}{12n^3} \cdot n\,f''(\xi) = -\frac{(b-a)^3}{12n^2}\,f''(\xi)
+\]
+
+\begin{equation}
+  \boxed{R \approx -\frac{(b-a)^3}{12n^2}\,f''(\xi)}
+  \label{eq:errore-trap-comp}
+\end{equation}
+
+\noindent L'errore decresce come $1/n^2$: raddoppiando il numero di nodi
+$n$, l'errore si riduce di un fattore $4$.
+
+\subsection{Cavalieri-Simpson Composto}
+
+\subsubsection*{Impostazione: perché serve un numero pari di nodi}
+
+La formula di Cavalieri-Simpson opera su gruppi di 3 nodi consecutivi.
+Per poter suddividere i nodi in tali gruppi senza sovrapposizioni né
+buchi, è necessario che $n$ sia \textbf{pari}: in questo caso si hanno
+$m = n/2$ sottointervalli (ognuno costituito da 3 nodi).
+
+I sottointervalli ``composti'' sono:
+\[
+  T_k = [x_{2k},\, x_{2k+1},\, x_{2k+2}]
+      = [x_{2k},x_{2k+1}] \cup [x_{2k+1},x_{2k+2}],
+      \quad k = 0, 1, \ldots, \frac{n}{2}-1
+\]
+
+\noindent dove $x_{2k+1}$ è il punto medio del macro-sottointervallo
+$[x_{2k},x_{2k+2}]$, che ha ampiezza $2h$.
+
+\begin{intuizione}
+Ogni $T_k$ è un ``macro-sottointervallo'' di ampiezza $2h$, suddiviso
+in due intervalli elementari di ampiezza $h$, con il nodo $x_{2k+1}$
+come punto medio. Su ogni $T_k$ si applica Cavalieri-Simpson a 3 punti.
+\end{intuizione}
+
+\subsubsection*{Esempi al variare di $n$ (con $m = n/2$)}
+
+\begin{center}
+\begin{tabular}{ccl}
+\toprule
+$n$ & $m$ & Sottointervalli $T_k$ \\
+\midrule
+$2$ & $1$ & $T_0 = [x_0, x_1, x_2]$ \\
+$4$ & $2$ & $T_0 = [x_0,x_1,x_2]$, \quad $T_1 = [x_2,x_3,x_4]$ \\
+$6$ & $3$ & $T_0 = [x_0,x_1,x_2]$, \quad $T_1 = [x_2,x_3,x_4]$,
+            \quad $T_2 = [x_4,x_5,x_6]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection*{Formula generale}
+
+Applicando Cavalieri-Simpson~\eqref{eq:simpson} su ogni $T_k$ e
+sommando su $k = 0, 1, \ldots, m-1$:
+\[
+  \tilde{I}
+  \approx \frac{h}{3}\!\left[
+    f(x_0)
+    + 4\sum_{i=0}^{m-1} f(x_{2i+1})
+    + 2\sum_{i=1}^{m-1} f(x_{2i})
+    + f(x_n)
+  \right]
+\]
+
+\noindent Come nel caso del trapezio composto, i nodi agli estremi dei
+macro-sottointervalli ($x_0, x_2, x_4, \ldots, x_{n-2}, x_n$) compaiono
+più volte: quelli interni ($x_2, x_4, \ldots, x_{n-2}$) vengono sommati
+con coefficiente~$2$, mentre i nodi centrali di ogni $T_k$
+($x_1, x_3, \ldots, x_{n-1}$) vengono sommati con coefficiente~$4$
+(il peso del punto medio nella formula semplice).
+
+Sostituendo $h = (b-a)/n$:
+
+\begin{equation}
+  \boxed{
+    \tilde{I}
+    = \frac{b-a}{6}\!\left[
+      f(x_0)
+      + 4\sum_{i=0}^{\frac{n}{2}-1} f(x_{2i+1})
+      + 2\sum_{i=1}^{\frac{n}{2}-1} f(x_{2i})
+      + f(x_n)
+    \right]
+  }
+  \label{eq:simpson-comp}
+\end{equation}
+
+\noindent Il 4 che moltiplica la prima sommatoria è ereditato
+direttamente dalla formula originale di Cavalieri-Simpson, dove il
+punto medio ha peso quattro volte maggiore degli estremi.
+
+\subsubsection*{Errore del Cavalieri-Simpson composto}
+
+L'errore su ogni singolo sottointervallo $T_k$ (di ampiezza $2h$, con
+passo locale $h$) è:
+\[
+  R_k = -\frac{h^5}{90}\,f^{(4)}(\xi_k), \quad \xi_k \in T_k
+\]
+
+\noindent dove $f^{(4)}$ indica la derivata quarta di $f$.
+
+L'errore totale si ottiene sommando su tutti gli $m = n/2$
+sottointervalli. Sostituendo $h = (b-a)/n$, si ha $h^5 = (b-a)^5/n^5$:
+\begin{align*}
+  R &= \sum_{k=0}^{m-1} R_k
+     \approx m \cdot \left(-\frac{h^5}{90}\right) f^{(4)}(\xi) \\
+  &= \frac{n}{2} \cdot \left(-\frac{(b-a)^5}{90\,n^5}\right) f^{(4)}(\xi)
+   = -\frac{n\,(b-a)^5}{2 \cdot 90\,n^5}\,f^{(4)}(\xi)
+\end{align*}
+
+\begin{equation}
+  \boxed{R \approx -\frac{(b-a)^5}{180\,n^4}\,f^{(4)}(\xi)}
+  \label{eq:errore-simpson-comp}
+\end{equation}
+
+\noindent L'errore decresce come $1/n^4$: raddoppiando i nodi, l'errore
+si riduce di un fattore $16$.
+
+\begin{osservazione}[Confronto tra gli errori]
+Mettendo a confronto le due formule composite, dove $h = (b-a)/n$:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Formula & Ordine dell'errore & Fattore di riduzione per $n \to 2n$ \\
+\midrule
+Trapezio composto       & $\mathcal{O}(h^2) = \mathcal{O}(1/n^2)$ & $\times 1/4$ \\
+Cavalieri-Simpson comp. & $\mathcal{O}(h^4) = \mathcal{O}(1/n^4)$ & $\times 1/16$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent La formula di Cavalieri-Simpson ha grado di precisione $p = 3$:
+è esatta per tutti i polinomi di grado $\le 3$, pur avendo solo 3 nodi
+(che garantirebbero, in linea di principio, solo grado~2). Questo guadagno
+di un grado extra è dovuto alla simmetria della formula rispetto al punto
+medio dell'intervallo, che fa sì che gli errori di ordine dispari si
+cancellino esattamente.
+\end{osservazione}
 
 \end{document}
