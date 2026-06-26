@@ -14,6 +14,7 @@
 
 \theoremstyle{definition}
 \newtheorem{definizione}{Definizione}[section]
+\newtheorem{teorema}{Teorema}[section]
 \newtheorem{osservazione}{Osservazione}[section]
 
 \theoremstyle{remark}
@@ -1352,6 +1353,321 @@ analogo in $x = x_{i+1}$, combinato con la condizione $s_i(x_{i+1}) = f(x_{i+1})
 fornisce $A_i$. Utilizzando poi le condizioni di raccordo per la derivata
 prima si ricava il sistema lineare (tridiagonale) nei momenti $M_i$,
 che può essere risolto con complessità $O(r)$.
+\end{osservazione}
+
+
+% ============================================================
+\section{Perché un Sistema a Predominanza Diagonale Ammette Soluzione Unica?}
+% ============================================================
+
+\subsection{Premessa: unicità e determinante}
+
+Un sistema lineare $A\mathbf{x} = \mathbf{b}$ ammette soluzione unica nel momento in cui il
+determinante della matrice associata $\det(A) \neq 0$. Vogliamo capire perché la
+\textbf{predominanza diagonale} garantisce questa condizione. Per rispondere, richiamiamo i
+due teoremi di Gershgorin, che localizzano gli autovalori di una matrice nel piano complesso.
+
+\subsection{Primo Teorema di Gershgorin}
+
+\begin{teorema}[Primo Teorema di Gershgorin]
+Tutti gli autovalori di una matrice $A \in \mathbb{C}^{n \times n}$ si trovano all'interno
+dell'unione degli \emph{insiemi di Gershgorin}:
+\[
+  \lambda \in \bigcup_{i=1}^{n} K_i,
+\]
+dove l'\textbf{$i$-esimo insieme di Gershgorin} (relativo all'$i$-esima riga di $A$) è:
+\[
+  K_i = \left\{ z \in \mathbb{C} : |z - a_{ii}| \leq \sum_{\substack{j=1 \\ j \neq i}}^{n} |a_{ij}| \right\},
+  \qquad i = 1, 2, \ldots, n.
+\]
+\end{teorema}
+
+\noindent\textbf{Significato geometrico.} Ogni insieme $K_i$ è una \textbf{circonferenza nel
+piano complesso} con:
+\begin{itemize}
+  \item \textbf{centro} $a_{ii}$ (l'elemento diagonale dell'$i$-esima riga),
+  \item \textbf{raggio} $\displaystyle R_i = \sum_{\substack{j=1 \\ j \neq i}}^{n} |a_{ij}|$
+        (la somma dei moduli degli elementi fuori diagonale della riga $i$).
+\end{itemize}
+In parole: ogni autovalore di $A$ non può essere ``troppo lontano'' dall'elemento diagonale
+della riga corrispondente; il raggio misura esattamente quanto ampio è il margine di distanza
+consentito.
+
+\subsection{Secondo Teorema di Gershgorin}
+
+\begin{teorema}[Secondo Teorema di Gershgorin]
+Supponiamo che esistano due insiemi disgiunti di indici tali da formare:
+\[
+  N_1 = \bigcup_{i=1}^{k} K_i, \qquad N_2 = \bigcup_{i=k+1}^{n} K_i,
+\]
+con $N_1 \cap N_2 = \emptyset$. Allora esattamente $k$ autovalori appartengono a $N_1$ e i
+rimanenti $n - k$ autovalori appartengono a $N_2$:
+\[
+  \lambda_1, \lambda_2, \ldots, \lambda_k \in N_1,
+  \qquad
+  \lambda_{k+1}, \lambda_{k+2}, \ldots, \lambda_n \in N_2.
+\]
+\end{teorema}
+
+\noindent\textbf{Intuizione.} Questo teorema raffina il primo: non solo tutti gli autovalori
+stanno nell'unione delle circonferenze, ma se queste circonferenze sono separabili in due
+gruppi disgiunti, la distribuzione degli autovalori tra i due gruppi è esattamente
+determinata dal numero di cerchi in ciascun gruppo. Un caso speciale si presenta quando
+$N_1 = H_1 \cup H_2$ (due cerchi) e $N_2 = K_1$ (un cerchio): allora $N_1$ contiene
+esattamente due autovalori e $N_2$ ne contiene uno.
+
+\subsection{Predominanza Diagonale implica Non Singolarità}
+
+\begin{teorema}
+Se $A$ è a \textbf{predominanza diagonale per righe}, allora $A$ è \textbf{non singolare},
+ovvero $\det(A) \neq 0$.
+\end{teorema}
+
+\begin{proof}
+Ricordiamo che $\det(A) = 0$ se e solo se $0$ è un autovalore di $A$ (poiché il determinante
+è il prodotto di tutti gli autovalori). Mostreremo che $0$ \emph{non può} essere un autovalore,
+giungendo a una contraddizione.
+
+\medskip
+\noindent\textbf{Passo 1: costruiamo i cerchi di Gershgorin.}
+
+Per ogni riga $i$, l'insieme di Gershgorin è:
+\[
+  K_i = \left\{ z \in \mathbb{C} : |z - a_{ii}| \leq \sum_{\substack{j=1 \\ j \neq i}}^{n}
+  |a_{ij}| \right\}.
+\]
+
+\medskip
+\noindent\textbf{Passo 2: applichiamo la predominanza diagonale.}
+
+La condizione di predominanza diagonale per righe richiede che, per ogni $i$:
+\[
+  |a_{ii}| > \sum_{\substack{j=1 \\ j \neq i}}^{n} |a_{ij}|.
+\]
+In altri termini, il modulo dell'elemento diagonale \emph{supera strettamente} la somma dei
+moduli degli elementi fuori diagonale della stessa riga.
+
+\medskip
+\noindent\textbf{Passo 3: verifichiamo che $z = 0$ non stia in nessun $K_i$.}
+
+Per assurdo, supponiamo che $0$ sia un autovalore. Per il Primo Teorema di Gershgorin, $0$
+deve appartenere ad almeno un $K_i$, ovvero deve esistere un indice $i$ tale che:
+\[
+  |0 - a_{ii}| \leq \sum_{\substack{j=1 \\ j \neq i}}^{n} |a_{ij}|,
+  \quad \text{cioè} \quad
+  |a_{ii}| \leq \sum_{\substack{j=1 \\ j \neq i}}^{n} |a_{ij}|.
+\]
+Ma questa disuguaglianza \textbf{contraddice direttamente} la condizione di predominanza
+diagonale, che richiede $|a_{ii}| > \sum_{j \neq i} |a_{ij}|$. La contraddizione mostra
+che $0$ non appartiene ad alcun $K_i$, dunque $0$ non può essere un autovalore di $A$.
+
+\medskip
+\noindent\textbf{Conclusione.} Poiché $0$ non è un autovalore, il prodotto di tutti gli
+autovalori (che è $\det(A)$) è diverso da zero, quindi $\det(A) \neq 0$ e il sistema
+$A\mathbf{x} = \mathbf{b}$ ha soluzione unica.
+\end{proof}
+
+\begin{osservazione}[Struttura logica del ragionamento]
+Il ragionamento si svolge in tre strati:
+\begin{enumerate}
+  \item \emph{Il determinante è il prodotto degli autovalori} (algebra lineare di base).
+  \item \emph{Gli autovalori sono confinati nei cerchi di Gershgorin} (Primo Teorema).
+  \item \emph{La predominanza diagonale esclude $0$ da tutti i cerchi} (calcolo diretto).
+\end{enumerate}
+Ogni strato causa il successivo: la predominanza diagonale agisce sui cerchi, i cerchi
+agiscono sugli autovalori, gli autovalori agiscono sul determinante.
+\end{osservazione}
+
+% ============================================================
+\section{Metodo delle Potenze}
+% ============================================================
+
+\subsection{Obiettivo e impostazione}
+
+Il \textbf{metodo delle potenze} è un algoritmo iterativo che permette di approssimare
+l'\textbf{autovalore di modulo massimo} di una matrice $A$ e il suo corrispondente
+\textbf{autovettore}. Fissato un vettore iniziale $v^{(0)}$, si genera la successione:
+\[
+  \bigl\{ v^{(k)} = A\,v^{(k-1)} \bigr\}_{k=0}^{\infty}.
+\]
+Ogni passo consiste dunque in una semplice moltiplicazione matrice-vettore.
+
+\subsection{Condizioni di Convergenza}
+
+Perché il metodo converga, è necessario imporre due condizioni:
+\begin{enumerate}
+  \item \textbf{Separazione dell'autovalore dominante}:
+    \[
+      |\lambda_1| > |\lambda_2| \geq |\lambda_3| \geq \cdots \geq |\lambda_n|.
+    \]
+    $\lambda_1$ indica l'autovalore di modulo strettamente massimo, $\lambda_2, \ldots,
+    \lambda_n$ gli altri (non necessariamente distinti tra loro).
+  \item \textbf{Base di autovettori}: gli autovettori $x_1, x_2, \ldots, x_n$ di $A$
+    devono formare un insieme linearmente indipendente, quindi una \emph{base} di
+    $\mathbb{R}^n$ (o $\mathbb{C}^n$).
+\end{enumerate}
+
+\subsection{Decomposizione del Vettore Iniziale}
+
+Dato che gli autovettori $\{x_i\}$ formano una base, qualunque vettore iniziale $v^{(0)}$
+è esprimibile come combinazione lineare:
+\[
+  v^{(0)} = \alpha_1 x_1 + \alpha_2 x_2 + \cdots + \alpha_n x_n,
+\]
+dove $\alpha_1, \alpha_2, \ldots, \alpha_n \in \mathbb{R}$ (o $\mathbb{C}$) sono coordinate
+(scalari) della decomposizione. Si assume $\alpha_1 \neq 0$ per garantire che la componente
+lungo $x_1$ non sia nulla fin dall'inizio.
+
+\subsection{Evoluzione della Successione}
+
+\noindent\textbf{Passo $k=1$.} Calcoliamo $v^{(1)}$ applicando $A$ a $v^{(0)}$:
+\[
+  v^{(1)} = A\,v^{(0)}
+  = A(\alpha_1 x_1 + \alpha_2 x_2 + \cdots + \alpha_n x_n)
+  = \alpha_1 A x_1 + \alpha_2 A x_2 + \cdots + \alpha_n A x_n.
+\]
+Poiché gli $x_i$ sono \textbf{autovettori}, vale la relazione $Ax_i = \lambda_i x_i$, quindi:
+\[
+  v^{(1)} = \alpha_1 \lambda_1 x_1 + \alpha_2 \lambda_2 x_2 + \cdots + \alpha_n \lambda_n x_n.
+\]
+Ogni iterazione ``amplifica'' (o smorza) ciascuna componente proporzionalmente al proprio
+autovalore.
+
+\medskip
+\noindent\textbf{Passo generico $k$.} Iterando il ragionamento, al passo $k$-esimo si ottiene:
+\begin{align}
+  v^{(k)}
+  &= \alpha_1 \lambda_1^k x_1 + \alpha_2 \lambda_2^k x_2 + \cdots + \alpha_n \lambda_n^k x_n \nonumber \\
+  &= \lambda_1^k
+     \left(
+       \alpha_1 x_1
+       + \alpha_2 \left(\frac{\lambda_2}{\lambda_1}\right)^k x_2
+       + \cdots
+       + \alpha_n \left(\frac{\lambda_n}{\lambda_1}\right)^k x_n
+     \right). \label{eq:vk-decomp}
+\end{align}
+Il fattore globale $\lambda_1^k$ porta la norma a divergere (o convergere a zero), ma la
+\emph{direzione} è quella che ci interessa.
+
+\subsection{Convergenza verso l'Autovettore Dominante}
+
+Osserviamo le quantità dipendenti da $k$ all'interno della parentesi in~\eqref{eq:vk-decomp}.
+Poiché $|\lambda_i| < |\lambda_1|$ per ogni $i > 1$, i rapporti $|\lambda_i / \lambda_1| < 1$,
+dunque:
+\[
+  \left(\frac{\lambda_i}{\lambda_1}\right)^k \xrightarrow{k \to \infty} 0
+  \qquad \text{per ogni } i = 2, 3, \ldots, n.
+\]
+Pertanto, ponendo il limite $k \to \infty$ nella~\eqref{eq:vk-decomp}:
+\[
+  \lim_{k \to \infty} v^{(k)}
+  = \lim_{k \to \infty} \lambda_1^k
+    \left(
+      \alpha_1 x_1
+      + \alpha_2 \underbrace{\left(\frac{\lambda_2}{\lambda_1}\right)^k}_{\to\, 0} x_2
+      + \cdots
+      + \alpha_n \underbrace{\left(\frac{\lambda_n}{\lambda_1}\right)^k}_{\to\, 0} x_n
+    \right)
+  = \alpha_1 x_1 \cdot \lim_{k \to \infty} \lambda_1^k.
+\]
+In sintesi: $v^{(k)}$ \textbf{cresce asintoticamente nella direzione di $x_1$}. Tutte le
+componenti lungo gli altri autovettori vengono soppresse dalla condizione di separazione
+$|\lambda_1| > |\lambda_i|$.
+
+\subsection{Estrazione dell'Autovalore: il Rapporto tra Componenti}
+
+Per estrarre il valore di $\lambda_1$ senza conoscere $\alpha_1$ o il fattore $\lambda_1^k$,
+consideriamo il \textbf{rapporto tra la $r$-esima componente} di $v^{(k)}$ e di $v^{(k-1)}$
+(la notazione $v^{(k)}(r)$ indica la componente $r$ del vettore $v^{(k)}$):
+\[
+  \frac{v^{(k)}(r)}{v^{(k-1)}(r)}
+  =
+  \frac{
+    \lambda_1^k
+    \!\left(\alpha_1 x_1(r) + \displaystyle\sum_{i=2}^{n} \alpha_i
+    \!\left(\dfrac{\lambda_i}{\lambda_1}\right)^{\!k} x_i(r)\right)
+  }{
+    \lambda_1^{k-1}
+    \!\left(\alpha_1 x_1(r) + \displaystyle\sum_{i=2}^{n} \alpha_i
+    \!\left(\dfrac{\lambda_i}{\lambda_1}\right)^{\!k-1} x_i(r)\right)
+  }.
+\]
+Prendendo il limite per $k \to \infty$ e usando il fatto che i termini con
+$(\lambda_i/\lambda_1)^k \to 0$:
+\begin{align}
+  \lim_{k \to \infty} \frac{v^{(k)}(r)}{v^{(k-1)}(r)}
+  &= \frac{
+      \lambda_1^k \bigl(\alpha_1 x_1(r) + 0\bigr)
+    }{
+      \lambda_1^{k-1} \bigl(\alpha_1 x_1(r) + 0\bigr)
+    }
+  = \frac{\lambda_1^k}{\lambda_1^{k-1}}
+  = \lambda_1. \label{eq:rapporto-lambda}
+\end{align}
+Dunque il rapporto tra componenti omologhe di iterati consecutivi \textbf{converge
+all'autovalore dominante} $\lambda_1$. Questa considerazione vale per qualunque componente
+$r$ tale che $x_1(r) \neq 0$, ed è indipendente dall'indice $r$ scelto.
+
+\subsection{L'Algoritmo con Normalizzazione}
+
+Il calcolo prosegue indefinitamente, e la norma di $v^{(k)}$ tende a divergere (o collassare
+a zero) a causa del fattore $\lambda_1^k$. Per mantenere la stabilità numerica, ad ogni passo
+si effettua una \textbf{normalizzazione} del vettore corrente rispetto alla norma infinito:
+\[
+  t^{(k)} = \frac{v^{(k)}}{\|v^{(k)}\|_\infty},
+  \qquad
+  t^{(0)} = \frac{v^{(0)}}{\|v^{(0)}\|_\infty}.
+\]
+Qui $\|\cdot\|_\infty$ denota la norma del massimo (massimo valore assoluto tra le componenti).
+La normalizzazione garantisce che $\|t^{(k)}\|_\infty = 1$ ad ogni passo, evitando overflow o
+underflow numerici.
+
+\medskip
+\noindent L'algoritmo completo del metodo delle potenze con normalizzazione è il seguente.
+Per ogni iterazione $k = 1, 2, 3, \ldots$:
+\[
+  \begin{cases}
+    v^{(k)} = A\,t^{(k-1)} & \text{(moltiplica per $A$ il vettore normalizzato)}\\[6pt]
+    \lambda_i^{(k)} = \dfrac{v^{(k)}(r)}{t^{(k-1)}(r)}
+      & \leftarrow \textbf{Approssimazione dell'autovalore}\\[10pt]
+    t^{(k)} = \dfrac{v^{(k)}}{\|v^{(k)}\|_\infty}
+      & \leftarrow \textbf{Approssimazione dell'autovettore}
+  \end{cases}
+\]
+dove $r$ è un indice fisso per cui $t^{(k-1)}(r) \neq 0$ (in pratica si sceglie $r$ come
+l'indice del massimo in modulo di $v^{(k-1)}$, che è proprio quello normalizzato a $1$ dalla
+norma infinito).
+
+\subsection{Criterio di Arresto}
+
+Poiché il processo non può andare all'infinito, si introduce un valore di tolleranza
+$\mathtt{toll} > 0$ e si arresta il ciclo non appena la variazione dell'autovalore tra due
+iterazioni successive diventa sufficientemente piccola:
+\[
+  \boxed{\bigl|\lambda_i^{(k)} - \lambda_i^{(k-1)}\bigr| < \mathtt{toll}.}
+\]
+La scelta di $\mathtt{toll}$ dipende dalla precisione richiesta: valori tipici sono
+$10^{-6}$ o $10^{-8}$.
+
+\begin{osservazione}[Velocità di convergenza]
+La velocità con cui il metodo delle potenze converge è determinata dal rapporto
+$|\lambda_2 / \lambda_1|$: se questo è molto minore di $1$ (autovalore dominante ben
+separato), la convergenza è rapida; se è vicino a $1$ (due autovalori quasi di pari modulo),
+la convergenza è lenta. In tal caso si usano varianti come il metodo di potenza con shift.
+\end{osservazione}
+
+\begin{osservazione}[Struttura logica causa-effetto del metodo]
+Il ragionamento si articola così:
+\begin{enumerate}
+  \item \emph{Dato che} gli autovettori formano una base, $v^{(0)}$ si decompone in
+        $\sum \alpha_i x_i$.
+  \item \emph{Dato che} ogni moltiplicazione per $A$ moltiplica la componente $i$ per
+        $\lambda_i$, al passo $k$ la componente $i$ vale $\alpha_i \lambda_i^k$.
+  \item \emph{Dato che} $|\lambda_1| > |\lambda_i|$ per $i > 1$, tutti i rapporti
+        $(\lambda_i/\lambda_1)^k \to 0$, e la direzione di $v^{(k)}$ collassa su $x_1$.
+  \item \emph{Dato che} la norma diverge, normalizziamo: il vettore normalizzato approssima
+        $x_1$, il rapporto tra componenti approssima $\lambda_1$.
+\end{enumerate}
 \end{osservazione}
 
 \end{document}
