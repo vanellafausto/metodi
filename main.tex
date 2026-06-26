@@ -1013,4 +1013,345 @@ decomposizione QR di $A$, evitando di formare esplicitamente il
 prodotto $A^T A$.
 \end{osservazione}
 
+
+% =============================================================================
+\section{Spline e Spline Cubiche}
+% =============================================================================
+
+\subsection{Definizione di Spline}
+
+Dati $r+1$ nodi distinti
+\[
+  x_0 < x_1 < x_2 < \cdots < x_r,
+\]
+si definisce \textbf{spline di ordine $n$} una funzione $s(x)$ con le
+seguenti proprietà strutturali:
+\begin{enumerate}
+  \item \textbf{Struttura a tratti:} $s(x)$ è costituita da $r$ polinomi
+        di grado $n$. Ciascun pezzo $s_i(x)$ è definito sul sotto-intervallo
+        (detto \emph{supporto})
+        \[
+          I_i = [x_i,\, x_{i+1}], \qquad i = 0, 1, \ldots, r-1.
+        \]
+
+  \item \textbf{Raccordo $\mathcal{C}^{n-1}$:} i pezzi sono raccordati
+        tra loro in modo che la funzione risultante sia globalmente continua
+        insieme alle sue derivate fino all'ordine $n-1$.
+        Formalmente, per ogni nodo interno $x_i$ con $i = 1, \ldots, r-1$:
+        \begin{equation}
+          s_{i-1}^{(k)}(x_i) = s_i^{(k)}(x_i),
+          \qquad k = 0, 1, \ldots, n-1.
+          \label{eq:raccordo-generale}
+        \end{equation}
+        Questa è la \textbf{Condizione di Raccordo}: impone che i valori e
+        le prime $n-1$ derivate del polinomio di sinistra $s_{i-1}$ e di
+        quello di destra $s_i$ coincidano nel nodo $x_i$.
+\end{enumerate}
+
+\begin{intuizione}
+Invece di approssimare l'intera funzione con un unico polinomio di grado
+elevato --- il che porta all'instabilità di Runge nei nodi equidistanti ---
+una spline usa polinomi di basso grado su ogni sotto-intervallo. I pezzi
+vengono poi ``cuciti'' nei nodi di raccordo così da produrre una curva
+globalmente liscia. L'immagine classica è quella di un listello di legno
+(lo \emph{spline} fisico) piegato per passare attraverso una serie di
+chiodini: il materiale stesso garantisce la continuità della curvatura.
+\end{intuizione}
+
+% ---------------------------------------------------------------------------
+\subsection{Le Spline Cubiche: Struttura Locale}
+% ---------------------------------------------------------------------------
+
+Le \textbf{spline cubiche} corrispondono al caso $n = 3$: ogni pezzo è un
+polinomio di terzo grado. Poiché $s_i(x) \in P_3$, la formula generale è:
+
+\begin{equation}
+  \boxed{s_i(x) = a_3\,x^3 + a_2\,x^2 + a_1\,x + a_0,}
+  \qquad i = 0, 1, \ldots, r-1.
+  \label{eq:spline-cubica}
+\end{equation}
+
+\noindent dove i coefficienti $a_0, a_1, a_2, a_3$ dipendono in generale
+dall'indice $i$ (ogni pezzo ha i propri quattro coefficienti).
+
+\subsubsection*{Conteggio delle incognite}
+
+Ogni polinomio cubico $s_i(x)$ è determinato da \textbf{4 coefficienti}.
+Con $r$ pezzi, il numero totale di incognite è:
+\[
+  \underbrace{4}_{\text{coeff. per pezzo}} \times \underbrace{r}_{\text{pezzi}}
+  = 4r.
+\]
+
+Per determinare univocamente tutti i coefficienti occorrono esattamente
+$4r$ equazioni.
+
+% ---------------------------------------------------------------------------
+\subsection{Conteggio delle Condizioni}
+% ---------------------------------------------------------------------------
+
+Le condizioni disponibili per una spline cubica sono di due tipi principali.
+
+\subsubsection*{1.\ Condizione di Raccordo}
+
+Per ogni nodo \emph{interno} $x_i$ (con $i = 1, \ldots, r-1$), i polinomi
+$s_{i-1}$ (a sinistra) e $s_i$ (a destra) devono coincidere in valore e nelle
+prime due derivate, poiché $n - 1 = 2$:
+
+\begin{equation}
+  \begin{cases}
+    s_{i-1}(x_i)   = s_i(x_i)   \\[4pt]
+    s'_{i-1}(x_i)  = s'_i(x_i)  \\[4pt]
+    s''_{i-1}(x_i) = s''_i(x_i)
+  \end{cases}
+  \qquad i = 1, 2, \ldots, r-1.
+  \label{eq:raccordo-cubico}
+\end{equation}
+
+Queste condizioni assicurano che la spline globale sia di classe
+$\mathcal{C}^2$ (continua con derivata prima e seconda continue). Poiché
+i nodi interni sono $r - 1$, il numero totale di condizioni di raccordo è:
+\[
+  3 \times (r - 1) = 3r - 3.
+\]
+
+\subsubsection*{2.\ Condizione di Interpolazione}
+
+La spline deve \textbf{interpolare} i dati: il suo valore in ciascun
+nodo $x_i$ deve riprodurre esattamente il valore $f(x_i)$ della funzione
+da approssimare:
+\[
+  s(x_i) = f(x_i), \qquad i = 0, 1, \ldots, r.
+\]
+I nodi sono $r + 1$, quindi si ottengono $r + 1$ condizioni di interpolazione.
+
+\subsubsection*{Bilancio e mancanza di 2 condizioni}
+
+Sommando le condizioni disponibili:
+\[
+  \underbrace{3(r-1)}_{\text{raccordo}}
+  + \underbrace{(r+1)}_{\text{interpolazione}}
+  = 3r - 3 + r + 1 = 4r - 2.
+\]
+
+Abbiamo $4r$ incognite e solo $4r - 2$ condizioni: \textbf{mancano 2
+equazioni}. Occorre quindi aggiungere una coppia di condizioni al
+contorno, negli estremi $x_0$ e $x_r$.
+
+% ---------------------------------------------------------------------------
+\subsection{Le Tre Tipologie di Spline Cubiche}
+% ---------------------------------------------------------------------------
+
+A seconda della coppia di condizioni al contorno scelta, si ottengono tre
+varianti fondamentali di spline cubiche:
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Tipo} & \textbf{Condizioni al contorno aggiuntive} \\
+\hline
+\textbf{Spline Completa} &
+  $s'(x_0) = f'(x_0)$ \quad e \quad $s'(x_r) = f'(x_r)$ \\
+\hline
+\textbf{Spline Naturale} &
+  $s''(x_0) = 0$ \quad e \quad $s''(x_r) = 0$ \\
+\hline
+\textbf{Spline Periodica} &
+  $s'(x_0) = s'(x_r)$ \quad e \quad $s''(x_0) = s''(x_r)$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+  \item La \textbf{spline completa} impone i valori della derivata prima
+        agli estremi. È la scelta più accurata quando si conosce
+        $f'(x_0)$ e $f'(x_r)$.
+  \item La \textbf{spline naturale} annulla la derivata seconda (ovvero
+        la curvatura) agli estremi. È la scelta più comune quando
+        non si dispone di informazioni sulla derivata di $f$.
+  \item La \textbf{spline periodica} è adatta quando $f$ è una funzione
+        periodica con $f(x_0) = f(x_r)$: le condizioni garantiscono
+        che $s'$ e $s''$ si raccordino anche agli estremi (che
+        coincidono a meno della periodicità).
+\end{itemize}
+
+\noindent Con una di queste coppie il conteggio diventa
+$4r - 2 + 2 = 4r$: il numero di condizioni eguaglia il numero di
+incognite. Si ottiene così un \textbf{sistema lineare quadrato con
+struttura sparsa}, di ordine al più $r + 1$, risolvibile in modo
+efficiente con algoritmi per matrici a banda.
+
+% ---------------------------------------------------------------------------
+\subsection{Costruzione tramite i Momenti della Derivata Seconda}
+% ---------------------------------------------------------------------------
+
+Per calcolare esplicitamente la spline, si usa un approccio sistematico
+che parte dalla derivata seconda (la più semplice da costruire) e
+retrocede per integrazioni successive fino alla funzione $s_i(x)$.
+
+\subsubsection*{Osservazione chiave: la derivata seconda è lineare a tratti}
+
+Poiché $s_i(x) \in P_3$, la sua derivata seconda $s''_i(x)$ è un polinomio
+di grado al più $1$, cioè \textbf{lineare}. Una funzione lineare
+sull'intervallo $[x_i, x_{i+1}]$ è univocamente determinata dai suoi
+valori nei due estremi.
+
+\subsubsection*{Definizione dei Momenti e dell'Ampiezza degli Intervalli}
+
+Si definiscono i \textbf{momenti} come i valori della derivata seconda
+della spline in ciascun nodo:
+\[
+  \{M_i = s''_i(x_i)\}_{i=0}^{r}.
+\]
+
+Grazie alla Condizione di Raccordo~\eqref{eq:raccordo-cubico}, la derivata
+seconda è continua nei nodi interni, quindi $M_i$ è ben definito (coincide
+per il pezzo di sinistra e per quello di destra). Si definisce inoltre
+l'\textbf{ampiezza di ogni sotto-intervallo}:
+\[
+  h_{i+1} = x_{i+1} - x_i, \qquad i = 0, 1, \ldots, r-1.
+\]
+
+\subsubsection*{Interpolazione di Lagrange della derivata seconda}
+
+Poiché $s''_i(x)$ è lineare su $[x_i, x_{i+1}]$ e vale $M_i$ in $x_i$
+e $M_{i+1}$ in $x_{i+1}$, si costruisce esplicitamente con la formula di
+Lagrange a due punti:
+\[
+  s''_i(x)
+  = s''_i(x_{i+1})\,\frac{x - x_i}{x_{i+1} - x_i}
+  + s''_i(x_i)\,\frac{x - x_{i+1}}{x_i - x_{i+1}},
+  \qquad i = 0, 1, \ldots, r-1.
+\]
+
+Osservando che $\dfrac{x - x_{i+1}}{x_i - x_{i+1}} = \dfrac{x_{i+1} - x}{x_{i+1} - x_i}$
+(cambio di segno a numeratore e denominatore), e sostituendo i momenti
+$M_i$, $M_{i+1}$ e l'ampiezza $h_{i+1}$, si ottiene:
+
+\begin{equation}
+  \boxed{
+    s''_i(x) = M_{i+1}\,\frac{x - x_i}{h_{i+1}}
+              + M_i\,\frac{x_{i+1} - x}{h_{i+1}}
+  }
+  \qquad i = 0, 1, \ldots, r-1.
+  \label{eq:s-seconda}
+\end{equation}
+
+\begin{intuizione}
+La formula~\eqref{eq:s-seconda} è semplicemente un'interpolazione lineare
+tra i momenti $M_i$ e $M_{i+1}$: quando $x = x_i$ il coefficiente di
+$M_{i+1}$ vale $0$ e quello di $M_i$ vale $1$; quando $x = x_{i+1}$
+accade il contrario. Il contributo dei due momenti varia con continuità
+al crescere di $x$ da $x_i$ a $x_{i+1}$.
+\end{intuizione}
+
+% ---------------------------------------------------------------------------
+\subsection{Integrazione a Ritroso: dalla Derivata Seconda alla Spline}
+% ---------------------------------------------------------------------------
+
+Partendo da~\eqref{eq:s-seconda}, si integrano due volte rispetto a $x$
+per risalire prima a $s'_i(x)$ e poi a $s_i(x)$.
+
+\subsubsection*{Prima integrazione: la derivata prima (Formula 2)}
+
+\[
+  s'_i(x) = \int s''_i(x)\,dx
+  = \int \!\left[ M_{i+1}\,\frac{x - x_i}{h_{i+1}}
+                + M_i\,\frac{x_{i+1} - x}{h_{i+1}} \right] dx.
+\]
+
+\noindent\textbf{Primo addendo} (sostituzione $u = x - x_i$, $du = dx$):
+\[
+  \int M_{i+1}\,\frac{x - x_i}{h_{i+1}}\,dx
+  = \frac{M_{i+1}}{h_{i+1}}\int u\,du
+  = \frac{M_{i+1}}{h_{i+1}}\,\frac{u^2}{2}
+  = \frac{M_{i+1}\,(x - x_i)^2}{2\,h_{i+1}}.
+\]
+
+\noindent\textbf{Secondo addendo} (sostituzione $u = x_{i+1} - x$,
+$du = -dx$):
+\[
+  \int M_i\,\frac{x_{i+1} - x}{h_{i+1}}\,dx
+  = \frac{M_i}{h_{i+1}}\int u\,(-du)
+  = -\frac{M_i}{h_{i+1}}\,\frac{u^2}{2}
+  = -\frac{M_i\,(x_{i+1} - x)^2}{2\,h_{i+1}}.
+\]
+
+\noindent Sommando i due contributi e aggiungendo la costante di
+integrazione $A_i$ si ottiene la \textbf{Formula (2)}:
+
+\begin{equation}
+  \boxed{
+    s'_i(x) = M_{i+1}\,\frac{(x - x_i)^2}{2\,h_{i+1}}
+             - M_i\,\frac{(x_{i+1} - x)^2}{2\,h_{i+1}} + A_i
+  }
+  \label{eq:s-prima}
+\end{equation}
+
+\subsubsection*{Seconda integrazione: la spline (Formula 3)}
+
+\[
+  s_i(x) = \int s'_i(x)\,dx
+  = \int\!\left[
+      M_{i+1}\,\frac{(x - x_i)^2}{2\,h_{i+1}}
+      - M_i\,\frac{(x_{i+1} - x)^2}{2\,h_{i+1}}
+      + A_i
+    \right] dx.
+\]
+
+\noindent\textbf{Primo addendo} (sostituzione $u = x - x_i$, $du = dx$):
+\[
+  \int \frac{M_{i+1}}{2\,h_{i+1}}\,(x - x_i)^2\,dx
+  = \frac{M_{i+1}}{2\,h_{i+1}}\,\frac{u^3}{3}
+  = \frac{M_{i+1}\,(x - x_i)^3}{6\,h_{i+1}}.
+\]
+
+\noindent\textbf{Secondo addendo} (sostituzione $u = x_{i+1} - x$,
+$du = -dx$):
+\[
+  \int \!\left(-\frac{M_i}{2\,h_{i+1}}\right)(x_{i+1} - x)^2\,dx
+  = -\frac{M_i}{2\,h_{i+1}}\int u^2\,(-du)
+  = \frac{M_i}{2\,h_{i+1}}\,\frac{u^3}{3}
+  = \frac{M_i\,(x_{i+1} - x)^3}{6\,h_{i+1}}.
+\]
+
+\noindent\textbf{Terzo addendo} (usando come convenzione che la costante
+di integrazione sia assorbita partendo da $x_i$):
+\[
+  \int A_i\,dx = A_i\,(x - x_i).
+\]
+
+\noindent Sommando tutti i contributi e aggiungendo la seconda costante di
+integrazione $B_i$, si ottiene la \textbf{Formula fondamentale (3)}, nota
+come \emph{spline cubica in forma di momenti}:
+
+\begin{equation}
+  \boxed{
+    s_i(x) = M_{i+1}\,\frac{(x - x_i)^3}{6\,h_{i+1}}
+            + M_i\,\frac{(x_{i+1} - x)^3}{6\,h_{i+1}}
+            + A_i\,(x - x_i) + B_i
+  }
+  \label{eq:spline-momenti}
+\end{equation}
+
+\noindent dove $A_i$ e $B_i$ sono \textbf{costanti di integrazione},
+introdotte dal doppio passaggio dalla derivata seconda alla funzione
+originale.
+
+\begin{osservazione}[Significato di $A_i$ e $B_i$]
+Le costanti $A_i$ e $B_i$ non sono parametri liberi: vengono determinate
+imponendo le condizioni di interpolazione e di raccordo. In particolare,
+valutando~\eqref{eq:spline-momenti} in $x = x_i$ si ottiene:
+\[
+  s_i(x_i) = M_{i+1}\cdot 0 + M_i\,\frac{h_{i+1}^3}{6\,h_{i+1}}
+             + A_i\cdot 0 + B_i
+           = M_i\,\frac{h_{i+1}^2}{6} + B_i.
+\]
+La condizione $s_i(x_i) = f(x_i)$ determina direttamente $B_i$. Un calcolo
+analogo in $x = x_{i+1}$, combinato con la condizione $s_i(x_{i+1}) = f(x_{i+1})$,
+fornisce $A_i$. Utilizzando poi le condizioni di raccordo per la derivata
+prima si ricava il sistema lineare (tridiagonale) nei momenti $M_i$,
+che può essere risolto con complessità $O(r)$.
+\end{osservazione}
+
 \end{document}
