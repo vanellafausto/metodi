@@ -691,4 +691,326 @@ medio dell'intervallo, che fa sì che gli errori di ordine dispari si
 cancellino esattamente.
 \end{osservazione}
 
+% =============================================================================
+\section{Minimi Quadrati nel Discreto}
+% =============================================================================
+
+\subsection{Motivazione e contesto}
+
+I \textbf{minimi quadrati} ricadono nel macro-mondo dell'\textbf{interpolazione},
+ma vengono chiamati in causa nel caso in cui non si disponga di dati esatti.
+In quella situazione ci affidiamo ai minimi quadrati per la
+\textbf{minimizzazione delle distanze} tra la funzione approssimante $g_n(x)$
+e la funzione approssimata $f(x)$.
+
+Dunque, cerchiamo di approssimare $g_n(x)$ in modo che si avvicini
+il più possibile a $f(x_i)$ al fine di mantenere la condizione di
+interpolazione $g_n(x_i) \sim f(x_i)$.
+
+\begin{definizione}[Funzione approssimante nei minimi quadrati discreti]
+La funzione approssimante $g_n(x)$ è una \textbf{combinazione lineare}
+di funzioni interpolanti $\varphi_j(x)$, moltiplicate per dei coefficienti
+$\alpha_j$ da determinare:
+\begin{equation}
+  g_n(x_i) = \alpha_0\,\varphi_0(x_i) + \alpha_1\,\varphi_1(x_i)
+             + \cdots + \alpha_n\,\varphi_n(x_i)
+  \label{eq:gn-def}
+\end{equation}
+dove le funzioni base $\{\varphi_j(x)\}$ sono scelte \textbf{in base al
+fenomeno da analizzare} (polinomi, seni, coseni, esponenziali, ecc.).
+\end{definizione}
+
+\subsection{Impostazione del problema: molti dati, poca memoria}
+
+L'idea fondamentale è che si disponga di un numero $M+1$ di punti
+\emph{molto grande}, con $M \gg n$:
+\begin{equation}
+  \{x_i,\, f(x_i)\}_{i=0}^{M}, \qquad M \gg n
+  \label{eq:dati}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $x_i$ sono i \textbf{nodi di campionamento}, le ascisse note;
+  \item $f(x_i)$ sono i \textbf{valori misurati} (eventualmente affetti da
+        rumore) della funzione in quei nodi;
+  \item $n+1$ è il numero di funzioni base $\varphi_j$, con $n \ll M$
+        (si approssima con una funzione ``semplice'' a pochi parametri).
+\end{itemize}
+
+È sufficiente e desiderabile che la funzione approssimante ottenga
+solo di grado $n$ per un'approssimazione già sufficientemente precisa,
+piuttosto che interpolare esattamente tutti gli $M+1$ punti.
+
+\subsection{Formulazione matriciale: $g_n = A\alpha$}
+
+Scriviamo i valori di $g_n$ in tutti gli $M+1$ nodi come vettori colonna:
+\begin{equation}
+  \mathbf{g}_n =
+  \begin{pmatrix} g_n(x_0) \\ g_n(x_1) \\ \vdots \\ g_n(x_M) \end{pmatrix},
+  \qquad
+  \mathbf{f} =
+  \begin{pmatrix} f(x_0) \\ f(x_1) \\ \vdots \\ f(x_M) \end{pmatrix}
+  \label{eq:vettori}
+\end{equation}
+
+\noindent Dalla definizione~\eqref{eq:gn-def}, si vede che
+$g_n(x_i) = \sum_{j=0}^{n} \alpha_j\,\varphi_j(x_i)$: ogni componente
+di $\mathbf{g}_n$ è una combinazione lineare degli stessi coefficienti
+$\alpha_0, \ldots, \alpha_n$. Possiamo quindi scrivere
+$\mathbf{g}_n$ come prodotto matrice-vettore:
+
+\begin{equation}
+  \mathbf{g}_n = A\,\boldsymbol{\alpha}
+  \label{eq:gn-Aalpha}
+\end{equation}
+
+\noindent dove $A$ è la matrice di dimensioni $(M+1) \times (n+1)$ e
+$\boldsymbol{\alpha} = (\alpha_0, \alpha_1, \ldots, \alpha_n)^T$
+è il vettore (colonna) degli $n+1$ coefficienti incogniti:
+
+\begin{equation}
+  A =
+  \begin{pmatrix}
+    \varphi_0(x_0) & \varphi_1(x_0) & \cdots & \varphi_n(x_0) \\
+    \varphi_0(x_1) & \varphi_1(x_1) & \cdots & \varphi_n(x_1) \\
+    \varphi_0(x_2) & \varphi_1(x_2) & \cdots & \varphi_n(x_2) \\
+    \vdots         & \vdots         & \ddots & \vdots         \\
+    \varphi_0(x_M) & \varphi_1(x_M) & \cdots & \varphi_n(x_M)
+  \end{pmatrix}_{(M+1,\,n+1)}
+  \label{eq:matrice-A}
+\end{equation}
+
+\noindent Il sistema $\mathbf{g}_n = A\boldsymbol{\alpha}$ ha $M+1$ equazioni
+e soltanto $n+1$ incognite: poiché $M \gg n$, il sistema è
+\textbf{sovradeterminato} e in generale non ammette soluzione esatta.
+Per questo ci si accontenta della soluzione nel senso dei minimi quadrati.
+
+\begin{intuizione}
+La matrice $A$ gioca un ruolo analogo alla matrice di Vandermonde
+nell'interpolazione polinomiale, ma qui le righe sono molte di più
+delle colonne: il sistema non può essere soddisfatto esattamente per ogni
+dato, e si cerca invece la scelta di $\boldsymbol{\alpha}$ che minimizza
+la distanza (nel senso della norma euclidea) tra $\mathbf{f}$ e
+$A\boldsymbol{\alpha}$.
+\end{intuizione}
+
+% =============================================================================
+\section{Derivazione del Sistema Normale}
+% =============================================================================
+
+\subsection{Il funzionale da minimizzare}
+
+Lo scopo dei minimi quadrati è fare in modo che $g_n$ distia il meno
+possibile da $\mathbf{f}$ \textbf{secondo la norma 2} (al quadrato della
+distanza), ovvero \textbf{secondo la norma 2 al quadrato della distanza}
+(differenza). Si vuole dunque minimizzare il funzionale:
+
+\begin{equation}
+  \varepsilon^2(\alpha_0, \alpha_1, \ldots, \alpha_n)
+  = \|\mathbf{f} - \mathbf{g}_n\|_2^2
+  = \|\mathbf{f} - A\boldsymbol{\alpha}\|_2^2
+  = \sum_{i=0}^{M} \bigl[f(x_i) - g_n(x_i)\bigr]^2
+  \label{eq:funzionale}
+\end{equation}
+
+\noindent Espandendo la definizione di $g_n(x_i)$ dal
+sistema~\eqref{eq:gn-def}:
+
+\begin{equation}
+  \varepsilon^2(\alpha_0, \ldots, \alpha_n)
+  = \sum_{i=0}^{M}
+    \left\{f(x_i) - \left[\sum_{j=0}^{n} \alpha_j\,\varphi_j(x_i)\right]
+    \right\}^2
+  \label{eq:funzionale-espanso}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $f(x_i)$ è il valore misurato (noto) nel punto $x_i$;
+  \item $\alpha_j$ sono i coefficienti incogniti da ottimizzare;
+  \item $\varphi_j(x_i)$ è il valore della $j$-esima funzione base
+        nel punto $x_i$ (noto, dipende dalla scelta delle basi).
+\end{itemize}
+
+\subsection{Condizione necessaria di minimo}
+
+Per minimizzare $\varepsilon^2$ rispetto ai coefficienti $\alpha_k$,
+si impone che \textbf{la derivata parziale di $\varepsilon^2$ rispetto
+a ogni $\alpha_k$ si annulli}:
+
+\begin{equation}
+  \frac{\partial\,\varepsilon^2}{\partial\,\alpha_k} = 0,
+  \qquad k = 0, 1, \ldots, n
+  \label{eq:condizione-minimo}
+\end{equation}
+
+\noindent Questo produce un sistema di $n+1$ equazioni nelle $n+1$
+incognite $\alpha_0, \ldots, \alpha_n$, detto \textbf{sistema normale}.
+
+\subsection{Sviluppo esplicito della condizione di minimo}
+
+Deriviamo~\eqref{eq:funzionale-espanso} rispetto a $\alpha_k$ e
+applichiamo la regola della catena (derivata del quadrato):
+
+\begin{align}
+  0
+  &= \frac{\partial\,\varepsilon^2}{\partial\,\alpha_k}
+   = 2\sum_{i=0}^{M}
+     \left\{f(x_i) - \left[\sum_{j=0}^{n} \alpha_j\,\varphi_j(x_i)\right]
+     \right\}
+     \cdot \bigl(-\varphi_k(x_i)\bigr)
+  \label{eq:deriv1}
+\end{align}
+
+\noindent Il fattore $(-\varphi_k(x_i))$ nasce dalla derivata
+$\partial g_n(x_i)/\partial\alpha_k = \varphi_k(x_i)$, con il segno
+negativo dal fatto che nella parentesi figura $-g_n$.
+
+\medskip
+\noindent \textbf{Passo 1: Applico la proprietà distributiva e porto
+$f(x_i)$ a sinistra.}
+
+Moltiplico dentro la parentesi e separo i due addendi:
+\begin{align}
+  2\sum_{i=0}^{M} f(x_i)\,\varphi_k(x_i)
+  &= 2\sum_{i=0}^{M}\sum_{j=0}^{n}
+     \varphi_j(x_i)\,\varphi_k(x_i)\,\alpha_j
+  \label{eq:deriv2}
+\end{align}
+
+\medskip
+\noindent \textbf{Passo 2: Scambio le sommatorie a destra e tolgo il
+fattore 2.}
+
+Poiché $\alpha_j$ non dipende dall'indice $i$, lo porto fuori dalla
+somma su $i$, e scambio l'ordine delle due sommatorie ($i$ e $j$):
+\begin{equation}
+  \sum_{i=0}^{M} f(x_i)\,\varphi_k(x_i)
+  = \sum_{j=0}^{n}
+    \left[\sum_{i=0}^{M} \varphi_k(x_i)\,\varphi_j(x_i)\right]\alpha_j
+  \label{eq:sistema-scalare}
+\end{equation}
+
+\noindent Questa è l'equazione $k$-esima del sistema normale.
+Fissando $k = 0, 1, \ldots, n$ e $j = 0, 1, \ldots, n$, si costruisce
+un \textbf{sistema lineare di ordine $n+1$}:
+
+\subsection{Il sistema normale in forma matriciale}
+
+Scrivendo le $n+1$ equazioni~\eqref{eq:sistema-scalare} esplicitamente,
+per ogni coppia $(k, j)$, si ottiene la struttura:
+
+\[
+\begin{pmatrix}
+  \displaystyle\sum_{i=0}^{M}\varphi_0\varphi_0 &
+  \displaystyle\sum_{i=0}^{M}\varphi_0\varphi_1 &
+  \cdots &
+  \displaystyle\sum_{i=0}^{M}\varphi_0\varphi_n \\[10pt]
+  \displaystyle\sum_{i=0}^{M}\varphi_1\varphi_0 &
+  \displaystyle\sum_{i=0}^{M}\varphi_1\varphi_1 &
+  \cdots &
+  \displaystyle\sum_{i=0}^{M}\varphi_1\varphi_n \\[10pt]
+  \vdots & \vdots & \ddots & \vdots \\[6pt]
+  \displaystyle\sum_{i=0}^{M}\varphi_n\varphi_0 &
+  \displaystyle\sum_{i=0}^{M}\varphi_n\varphi_1 &
+  \cdots &
+  \displaystyle\sum_{i=0}^{M}\varphi_n\varphi_n
+\end{pmatrix}
+\begin{pmatrix}\alpha_0\\\alpha_1\\\vdots\\\alpha_n\end{pmatrix}
+=
+\begin{pmatrix}
+  \displaystyle\sum_{i=0}^{M} f(x_i)\,\varphi_0(x_i) \\[10pt]
+  \displaystyle\sum_{i=0}^{M} f(x_i)\,\varphi_1(x_i) \\[10pt]
+  \vdots \\[6pt]
+  \displaystyle\sum_{i=0}^{M} f(x_i)\,\varphi_n(x_i)
+\end{pmatrix}
+\]
+
+\noindent dove la somma $\sum_{i=0}^{M} \varphi_k(x_i)\,\varphi_j(x_i)$
+è l'elemento di riga $k$ e colonna $j$ della matrice del sistema.
+
+\begin{intuizione}
+L'elemento $(k,j)$ del sistema è il \emph{prodotto scalare discreto}
+tra la funzione base $\varphi_k$ e la funzione base $\varphi_j$,
+calcolato sui campioni $\{x_i\}$. Il termine al membro destro è invece
+il prodotto scalare discreto tra $f$ e $\varphi_k$.
+Minimizzare $\|\mathbf{f} - A\boldsymbol{\alpha}\|_2^2$ corrisponde
+quindi a trovare la ``proiezione ortogonale'' di $\mathbf{f}$ sullo
+spazio generato dalle colonne di $A$.
+\end{intuizione}
+
+% =============================================================================
+\section{Il Sistema Normale: $B\boldsymbol{\alpha} = \mathbf{c}$}
+% =============================================================================
+
+\subsection{Forma compatta e significato delle matrici}
+
+Il sistema lineare derivato nella sezione precedente si scrive
+compattamente come:
+
+\begin{equation}
+  \boxed{B\,\boldsymbol{\alpha} = \mathbf{c}}
+  \label{eq:sistema-normale}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $\mathbf{c} = A^T \mathbf{f}$\,: vettore colonna di dimensione
+        $n+1$, con componente $k$-esima pari a
+        $c_k = \sum_{i=0}^{M} f(x_i)\,\varphi_k(x_i)$.
+        Raccoglie i prodotti scalari discreti tra $\mathbf{f}$ e ciascuna
+        funzione base $\varphi_k$.
+
+  \item $B = A^T A$\,: matrice quadrata di dimensione $(n+1)\times(n+1)$,
+        con elemento $(k,j)$ pari a
+        $B_{kj} = \sum_{i=0}^{M}\varphi_k(x_i)\,\varphi_j(x_i)$.
+        La matrice $B$ è \textbf{simmetrica semidefinita positiva}.
+\end{itemize}
+
+\subsubsection*{Perché $B = A^TA$ è simmetrica semidefinita positiva?}
+
+La simmetria si verifica subito: $B_{kj} = \sum_i \varphi_k(x_i)\varphi_j(x_i)
+= B_{jk}$, dunque $B = B^T$.
+
+La semidefinitezza positiva si dimostra notando che, per qualsiasi
+vettore $\mathbf{v} \in \mathbb{R}^{n+1}$:
+\[
+  \mathbf{v}^T B\,\mathbf{v}
+  = \mathbf{v}^T (A^T A)\mathbf{v}
+  = (A\mathbf{v})^T (A\mathbf{v})
+  = \|A\mathbf{v}\|_2^2
+  \ge 0
+\]
+
+\noindent Il quadrato di una norma non è mai negativo, dunque
+$\mathbf{v}^T B\,\mathbf{v} \ge 0$ per ogni $\mathbf{v}$: ciò
+conferma che $B$ è \emph{semidefinita} positiva.
+
+\subsection{Il ruolo del rango di $A$ e il metodo di Cholesky}
+
+Se il \textbf{rango di $A$ è massimo} (cioè $\mathrm{rank}(A) = n+1$,
+la massima possibile dato che $A$ ha $n+1$ colonne), allora
+$\|A\mathbf{v}\|_2^2 = 0$ se e solo se $\mathbf{v} = \mathbf{0}$,
+il che implica:
+\[
+  \mathbf{v}^T B\,\mathbf{v} > 0 \quad \forall\,\mathbf{v} \ne \mathbf{0}
+\]
+
+\noindent In questo caso $B$ è \textbf{definita positiva}: il sistema
+normale~\eqref{eq:sistema-normale} ha soluzione unica e il metodo
+migliore per risolverlo è la \textbf{fattorizzazione di Cholesky},
+che sfrutta la simmetria e la definitezza positiva di $B$ per ridurre
+il costo computazionale rispetto alle fattorizzazioni generali (LU).
+
+\begin{osservazione}[Condizionamento del sistema normale]
+Sebbene $B = A^T A$ sia teoricamente ben definita quando $A$ ha
+rango massimo, nella pratica il condizionamento di $B$ è il
+quadrato del condizionamento di $A$: $\kappa(B) = \kappa(A)^2$.
+Per sistemi con $A$ mal condizionata, è quindi preferibile
+risolvere il problema dei minimi quadrati direttamente tramite la
+decomposizione QR di $A$, evitando di formare esplicitamente il
+prodotto $A^T A$.
+\end{osservazione}
+
 \end{document}
