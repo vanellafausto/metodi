@@ -2658,4 +2658,416 @@ Dimezzare il passo $h$ riduce l'errore DFC di un fattore 4,
 mentre per DFA/DFI il fattore è solo 2.
 \end{intuizione}
 
+% =============================================================================
+\section{Condizionamento di un sistema lineare}
+% =============================================================================
+
+\subsection{Motivazione e impostazione del problema}
+
+Per studiare la \emph{stabilità numerica} di un sistema lineare si fa
+riferimento alla sua forma matriciale $Ax = b$.
+Lavorando in aritmetica finita, il calcolatore introduce inevitabilmente
+degli errori di rappresentazione sui dati di ingresso: supponiamo che
+il termine noto $b$ sia affetto da una perturbazione $\delta b$, cioè che
+il calcolatore risolva in realtà il sistema perturbato
+\[
+  A(x + \delta x) = b + \delta b,
+\]
+dove:
+\begin{itemize}
+  \item $\delta b$ è il \textbf{vettore di perturbazione} sul termine noto
+        (errore di rappresentazione o errore nei dati);
+  \item $\delta x$ è la \textbf{variazione della soluzione} indotta da $\delta b$,
+        cioè l'errore che si vuole stimare.
+\end{itemize}
+
+\subsection{Derivazione della stima dell'errore relativo}
+
+Espandiamo il sistema perturbato:
+\[
+  Ax + A\delta x = b + \delta b.
+\]
+Poiché $x$ è la soluzione esatta, si ha $Ax = b$; sottraendo questa
+relazione membro a membro otteniamo il \textbf{sistema per la perturbazione}:
+\[
+  A\delta x = \delta b.
+\]
+Supponendo $A$ invertibile, l'errore $\delta x$ si esprime come:
+\[
+  \delta x = A^{-1}\delta b.
+\]
+Prendiamo la norma vettoriale di entrambi i membri:
+\[
+  \|\delta x\| = \|A^{-1}\delta b\|.
+\]
+Applicando la \textbf{disuguaglianza di compatibilità} tra norma matriciale
+e norma vettoriale ($\|Bv\| \leq \|B\|\,\|v\|$) otteniamo:
+\[
+  \|\delta x\| \leq \|A^{-1}\|\,\|\delta b\|.
+\]
+Dividiamo entrambi i membri per $\|x\|$ (con $x \neq 0$):
+\[
+  \frac{\|\delta x\|}{\|x\|} \leq \|A^{-1}\|\,\frac{\|\delta b\|}{\|x\|}.
+\]
+Moltiplichiamo e dividiamo il membro destro per $\|A\|$ (una quantità positiva):
+\[
+  \frac{\|\delta x\|}{\|x\|}
+  \leq \|A\|\,\|A^{-1}\|\,\frac{\|\delta b\|}{\|A\|\,\|x\|}.
+\]
+Osserviamo ora che, per la compatibilità, $\|b\| = \|Ax\| \leq \|A\|\,\|x\|$,
+da cui segue $\dfrac{1}{\|A\|\,\|x\|} \leq \dfrac{1}{\|b\|}$.
+Sostituendo nella disuguaglianza:
+\[
+  \frac{\|\delta x\|}{\|x\|}
+  \leq \|A\|\,\|A^{-1}\|\,\frac{\|\delta b\|}{\|b\|}
+  = K(A)\,\frac{\|\delta b\|}{\|b\|}.
+\]
+
+\subsection{Indice di condizionamento}
+
+\begin{definizione}[Numero di condizionamento]
+Si chiama \textbf{indice (o numero) di condizionamento} di una matrice
+invertibile $A$ la quantità
+\[
+  \boxed{K(A) = \|A\|\,\|A^{-1}\|.}
+\]
+Esso lega l'errore relativo sulla soluzione all'errore relativo sul
+termine noto secondo la stima:
+\[
+  \frac{\|\delta x\|}{\|x\|}
+  \leq K(A)\,\frac{\|\delta b\|}{\|b\|}.
+\]
+\end{definizione}
+
+\begin{teorema}[$K(A) \geq 1$]
+Per ogni matrice invertibile $A$ si ha $K(A) \geq 1$.
+\end{teorema}
+\begin{proof}
+Dalla proprietà submoltiplicativa della norma matriciale:
+\[
+  1 \leq \|I\| = \|A\,A^{-1}\| \leq \|A\|\,\|A^{-1}\| = K(A).
+\]
+\end{proof}
+
+\begin{osservazione}[Interpretazione pratica]
+\leavevmode
+\begin{itemize}
+  \item Il sistema è \textbf{bencondizionato} se $K(A) \approx 1$:
+        un piccolo errore relativo sui dati produce un piccolo errore
+        relativo sulla soluzione.
+  \item Il sistema è \textbf{malcondizionato} se $K(A) \gg 1$:
+        un piccolo errore relativo sui dati può amplificarsi enormemente
+        nella soluzione, rendendola inaffidabile.
+  \item Il numero di condizionamento dipende dalla norma scelta,
+        ma l'ordine di grandezza rimane indicativo del comportamento
+        del sistema.
+\end{itemize}
+\end{osservazione}
+
+\begin{osservazione}[Esempio di matrice malcondizionata: matrice di Hilbert]
+Un classico esempio di matrice fortemente malcondizionata è la
+\textbf{matrice di Hilbert} $H$ di entrata generica
+\[
+  H_{ij} = \frac{1}{i+j-1}, \quad i,j = 1,\ldots,n.
+\]
+Al crescere di $n$, $K(H)$ cresce in modo esplosivo (esponenzialmente),
+rendendo i sistemi $Hx = b$ praticamente irrisolvibili in aritmetica
+in virgola mobile per $n$ anche modesto.
+\end{osservazione}
+
+\begin{intuizione}
+Il numero di condizionamento misura quanto la geometria del sistema lineare
+``deformi'' lo spazio: una matrice bencondizionata trasforma la sfera
+unitaria in un ellissoide quasi sferico, mentre una matrice malcondizionata
+la schiaccia in un ellissoide molto allungato.
+In termini pratici, se $K(A) \approx 10^k$, allora si perdono circa $k$
+cifre significative nella soluzione rispetto alla precisione con cui si
+fornisce il termine noto $b$.
+\end{intuizione}
+
+% =============================================================================
+\section{Gauss--Seidel: velocità di convergenza}
+% =============================================================================
+
+\subsection{Metodi iterativi e splitting della matrice}
+
+I \textbf{metodi iterativi} per la risoluzione di $Ax = b$ si distinguono
+dai metodi diretti (eliminazione di Gauss, fattorizzazione LU) perché
+\emph{costruiscono una successione di iterate} $\{x^{(k)}\}$ che convergono
+alla soluzione, senza mai modificare direttamente la matrice $A$.
+Questo li rende particolarmente efficaci per sistemi di grandi dimensioni
+con matrici sparse.
+
+L'idea di base è lo \textbf{splitting} (decomposizione) di $A$:
+\[
+  A = N - P,
+\]
+dove:
+\begin{itemize}
+  \item $N$ è la parte ``facile da invertire'' (viene usata per costruire
+        l'iterazione);
+  \item $P = N - A$ è la parte ``residua''.
+\end{itemize}
+Il sistema $Ax = b$ diventa allora $(N - P)x = b$, ovvero $Nx = Px + b$,
+da cui si ricava lo schema iterativo:
+\[
+  x^{(k)} = N^{-1}P\,x^{(k-1)} + N^{-1}b.
+\]
+La \textbf{matrice di iterazione} è $N^{-1}P$: il metodo converge se e
+solo se il suo raggio spettrale $\rho(N^{-1}P) < 1$.
+
+\subsection{Splitting di Gauss--Seidel}
+
+Nel \textbf{metodo di Gauss--Seidel} (GS), la matrice $A$ viene splittata
+scegliendo $N = D - M$, dove:
+\begin{itemize}
+  \item $D$ è la matrice diagonale con gli elementi diagonali di $A$
+        ($D_{ii} = a_{ii}$);
+  \item $M$ è la parte strettamente triangolare \emph{inferiore} di $A$
+        (con segno cambiato, $M_{ij} = -a_{ij}$ per $j < i$, zeri altrove);
+  \item $P$ è la parte strettamente triangolare \emph{superiore} di $A$
+        (con segno cambiato, $P_{ij} = -a_{ij}$ per $j > i$, zeri altrove).
+\end{itemize}
+Con questo splitting la matrice di iterazione GS è:
+\[
+  N^{-1}P = (D-M)^{-1}P.
+\]
+
+\subsection{Sviluppo esplicito dell'iterazione}
+
+Partiamo dalla relazione $Nx^{(k)} = Px^{(k-1)} + b$, cioè
+$(D-M)x^{(k)} = Px^{(k-1)} + b$, e quindi:
+\[
+  Dx^{(k)} = Mx^{(k)} + Px^{(k-1)} + b.
+\]
+Moltiplicando per $D^{-1}$ (che esiste perché supponiamo $a_{ii} \neq 0$):
+\[
+  x^{(k)} = D^{-1}M\,x^{(k)} + D^{-1}P\,x^{(k-1)} + D^{-1}b.
+\]
+Le tre matrici hanno la seguente struttura esplicita:
+\[
+  D^{-1}M =
+  \begin{pmatrix}
+    0 & 0 & \cdots & 0 \\
+    \dfrac{a_{21}}{a_{22}} & 0 & \cdots & 0 \\
+    \vdots & \ddots & \ddots & \vdots \\
+    \dfrac{a_{n1}}{a_{nn}} & \dfrac{a_{n2}}{a_{nn}} & \cdots & 0
+  \end{pmatrix},
+\]
+\[
+  D^{-1}P =
+  \begin{pmatrix}
+    0 & -\dfrac{a_{12}}{a_{11}} & \cdots & -\dfrac{a_{1n}}{a_{11}} \\
+    0 & 0 & \cdots & -\dfrac{a_{2n}}{a_{22}} \\
+    \vdots & & \ddots & \vdots \\
+    0 & 0 & \cdots & 0
+  \end{pmatrix},
+  \qquad
+  D^{-1}b =
+  \begin{pmatrix}
+    b_1/a_{11} \\ b_2/a_{22} \\ \vdots \\ b_n/a_{nn}
+  \end{pmatrix}.
+\]
+
+\subsection{Formula componente per componente}
+
+Estraendo l'$i$-esimo componente del vettore $x^{(k)}$ si ottiene la
+formula operativa di GS:
+\[
+  \boxed{x_i^{(k)} =
+    \frac{-\displaystyle\sum_{j=1}^{i-1} a_{ij}\,x_j^{(k)}
+          -\displaystyle\sum_{j=i+1}^{n} a_{ij}\,x_j^{(k-1)} + b_i}
+         {a_{ii}}}.
+\]
+Questa formula si legge come segue:
+\begin{itemize}
+  \item La somma $\sum_{j=1}^{i-1}$ usa le componenti \emph{già aggiornate}
+        al passo corrente $k$ (indici $j < i$): questa è la caratteristica
+        distintiva di GS rispetto al metodo di Jacobi, che userebbe solo
+        valori al passo $k-1$.
+  \item La somma $\sum_{j=i+1}^{n}$ usa i valori del passo \emph{precedente}
+        $k-1$ (indici $j > i$, non ancora aggiornati).
+\end{itemize}
+
+\begin{osservazione}[Calcolo del primo componente]
+Si noti che $D^{-1}M$ è strettamente triangolare inferiore, pertanto la
+sua prima riga è composta interamente da zeri.
+Quando $i = 1$, la somma $\sum_{j=1}^{0}(\cdots) = 0$, dunque:
+\[
+  x_1^{(k)} = \frac{-\sum_{j=2}^{n} a_{1j}\,x_j^{(k-1)} + b_1}{a_{11}},
+\]
+che è calcolabile subito usando solo valori del passo precedente.
+Al passo successivo, $x_1^{(k)}$ è disponibile per il calcolo di $x_2^{(k)}$,
+e così via in cascata: il metodo di GS è \emph{sequenziale}.
+\end{osservazione}
+
+\subsection{Criteri di convergenza}
+
+\begin{teorema}[Convergenza di Gauss--Seidel]
+Il metodo di Gauss--Seidel converge (per qualsiasi vettore iniziale
+$x^{(0)}$) in ciascuno dei seguenti casi:
+\begin{enumerate}
+  \item $A$ è a \textbf{predominanza diagonale stretta} per righe,
+        cioè $|a_{ii}| > \sum_{j \neq i} |a_{ij}|$ per ogni $i$;
+  \item $A$ è \textbf{simmetrica e definita positiva}.
+\end{enumerate}
+\end{teorema}
+
+\begin{osservazione}[Velocità di convergenza e struttura della matrice]
+\leavevmode
+\begin{itemize}
+  \item Quanto \emph{più piccolo} è il raggio spettrale $\rho(N^{-1}P)$,
+        tanto \emph{più rapidamente} converge il metodo.
+  \item Per matrici \textbf{tridiagonali}, GS converge particolarmente
+        velocemente e può essere preferito anche rispetto ad altri iterativi.
+\end{itemize}
+\end{osservazione}
+
+\begin{intuizione}
+L'idea di GS è quella di ``correggere subito'' ogni componente della
+soluzione non appena è disponibile il nuovo valore, anziché aspettare
+che tutte le componenti siano state aggiornate (come fa Jacobi).
+Questa strategia \emph{greedy} fa sì che l'informazione si propaghi
+più rapidamente all'interno dell'iterazione, garantendo in molti casi
+una convergenza più veloce di Jacobi con lo stesso costo computazionale
+per iterazione.
+\end{intuizione}
+
+% =============================================================================
+\section{Metodo di rilassamento (SOR)}
+% =============================================================================
+
+\subsection{Motivazione: limitare la rigidità dello spostamento}
+
+Il \textbf{metodo di rilassamento} (SOR, \emph{Successive Over-Relaxation})
+nasce dall'osservazione che lo spostamento imposto da GS ad ogni passo
+potrebbe essere troppo ``rigido'': a volte è vantaggioso \emph{ridurre}
+oppure \emph{amplificare} lo spostamento per accelerare la convergenza.
+
+Partiamo riscrivendo l'iterazione GS nella forma:
+\[
+  x^{(k)} = D^{-1}M\,x^{(k)} + D^{-1}P\,x^{(k-1)} + D^{-1}b.
+\]
+Definiamo il \textbf{vettore residuo al passo $k$}:
+\[
+  r_k = x^{(k)} - x^{(k-1)},
+\]
+in modo che l'iterazione GS si scriva come $x^{(k)} = x^{(k-1)} + r_k$.
+Sostituendo l'espressione di $x^{(k)}$:
+\[
+  r_k
+  = D^{-1}M\,x^{(k)} + D^{-1}P\,x^{(k-1)} + D^{-1}b - x^{(k-1)}.
+\]
+Geometricamente, GS sposta $x^{(k-1)}$ di una quantità $\|r_k\|_2$
+nella direzione $r_k$.
+L'idea del rilassamento è di controllare la \emph{rigidità} di questo
+spostamento introducendo il \textbf{parametro di rilassamento} $\omega$:
+\[
+  \boxed{x^{(k)} = x^{(k-1)} + \omega\,r_k.}
+\]
+In base al valore di $\omega$:
+\begin{itemize}
+  \item $\omega < 1$: \textbf{sottorilassamento} (spostamento ridotto,
+        utile per stabilizzare iterazioni oscillanti);
+  \item $\omega > 1$: \textbf{sovrarilassamento} (spostamento amplificato,
+        utile per accelerare la convergenza);
+  \item $\omega = 1$: si ricade nel \textbf{metodo di Gauss--Seidel puro}.
+\end{itemize}
+
+\subsection{Derivazione della matrice di iterazione SOR}
+
+Vogliamo trovare la forma esplicita della matrice di iterazione del metodo
+di rilassamento.
+Sostituiamo $r_k = D^{-1}Mx^{(k)} + D^{-1}Px^{(k-1)} + D^{-1}b - x^{(k-1)}$
+nell'aggiornamento $x^{(k)} = x^{(k-1)} + \omega r_k$:
+\begin{align*}
+  x^{(k)}
+  &= x^{(k-1)}
+     + \omega\bigl(D^{-1}Mx^{(k)} + D^{-1}Px^{(k-1)} + D^{-1}b - x^{(k-1)}\bigr).
+\end{align*}
+Sviluppiamo:
+\[
+  x^{(k)}
+  = \omega D^{-1}Mx^{(k)}
+  + \omega D^{-1}Px^{(k-1)}
+  + \omega D^{-1}b
+  - \omega x^{(k-1)}
+  + x^{(k-1)}.
+\]
+Raccogliamo i termini in $x^{(k-1)}$ a destra e i termini in $x^{(k)}$
+a sinistra:
+\[
+  x^{(k)} - \omega D^{-1}Mx^{(k)}
+  = \bigl(\omega D^{-1}P + (1-\omega)I\bigr)x^{(k-1)} + \omega D^{-1}b.
+\]
+Il membro sinistro è $(I - \omega D^{-1}M)x^{(k)}$.
+Moltiplichiamo tutto per $D$:
+\[
+  D(I - \omega D^{-1}M)x^{(k)}
+  = D\bigl(\omega D^{-1}P + (1-\omega)I\bigr)x^{(k-1)} + \omega b.
+\]
+Poiché $D \cdot D^{-1}M = M$ e $D \cdot D^{-1}P = P$, si ottiene:
+\[
+  (D - \omega M)x^{(k)}
+  = \bigl((1-\omega)D + \omega P\bigr)x^{(k-1)} + \omega b.
+\]
+Supponendo $(D - \omega M)$ invertibile, la \textbf{forma chiusa dell'iterazione SOR} è:
+\[
+  \boxed{x^{(k)}
+    = (D - \omega M)^{-1}\bigl((1-\omega)D + \omega P\bigr)\,x^{(k-1)}
+    + \omega\,(D - \omega M)^{-1}b.}
+\]
+La \textbf{matrice di iterazione SOR} è quindi:
+\[
+  (N^{-1}P)_\omega
+  = (D - \omega M)^{-1}\bigl((1-\omega)D + \omega P\bigr).
+\]
+Si verifica immediatamente che per $\omega = 1$ si ritrova la matrice di
+iterazione di Gauss--Seidel: $(D-M)^{-1}P$.
+
+\subsection{Teoremi di convergenza}
+
+\begin{teorema}[Kahan -- condizione necessaria]
+Una condizione \textbf{necessaria} affinché il metodo SOR converga
+(qualunque sia il vettore iniziale $x^{(0)}$) è che il parametro di
+rilassamento soddisfi:
+\[
+  0 < \omega \leq 2.
+\]
+Se $\omega \notin (0,2]$, il metodo diverge indipendentemente dalla
+matrice $A$.
+\end{teorema}
+
+\begin{teorema}[Ostrowski--Reich -- condizione necessaria e sufficiente]
+Se $A$ è \textbf{simmetrica e definita positiva}, allora il metodo SOR
+converge se e solo se:
+\[
+  0 < \omega < 2.
+\]
+\end{teorema}
+
+\begin{osservazione}[Scelta ottimale di $\omega$]
+Il parametro $\omega$ deve essere scelto in modo da \textbf{minimizzare
+il raggio spettrale} $\rho\bigl((N^{-1}P)_\omega\bigr)$ della matrice di
+iterazione: un raggio spettrale più piccolo corrisponde a una convergenza
+più rapida.
+In pratica, per molte classi di matrici (ad esempio quelle provenienti
+dalla discretizzazione di equazioni alle derivate parziali), esiste una
+formula esplicita per il valore ottimale $\omega^*$, che dipende
+dagli autovalori della matrice di Jacobi associata.
+\end{osservazione}
+
+\begin{intuizione}
+Il metodo SOR può essere visto come un meccanismo di ``controllo
+adattivo'' dello spostamento.
+Con $\omega > 1$ (sovrarilassamento), si scommette che la direzione
+$r_k$ sia effettivamente verso la soluzione e si fa un passo più lungo;
+con $\omega < 1$ (sottorilassamento), si è più cauti per evitare
+oscillazioni.
+Il punto chiave è che, scegliendo $\omega$ in modo ottimale, il raggio
+spettrale della matrice di iterazione può essere significativamente
+ridotto rispetto al GS puro ($\omega = 1$), permettendo una convergenza
+molto più rapida con lo stesso costo per iterazione.
+\end{intuizione}
+
 \end{document}
