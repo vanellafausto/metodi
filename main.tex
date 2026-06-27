@@ -493,8 +493,8 @@ con passo $h = (b-a)/n$, suddividiamo l'intervallo nei sottointervalli:
   T_k = [x_k, x_{k+1}], \quad k = 0, 1, \ldots, n-1
 \]
 
-\noindent In particolare: $T_1 = [x_0,x_1]$, $T_2 = [x_1,x_2]$, \ldots,
-$T_n = [x_{n-1},x_n]$.
+\noindent In particolare: $T_0 = [x_0,x_1]$, $T_1 = [x_1,x_2]$, \ldots,
+$T_{n-1} = [x_{n-1},x_n]$.
 
 \subsubsection*{Somma dei trapezi}
 
@@ -704,9 +704,9 @@ In quella situazione ci affidiamo ai minimi quadrati per la
 \textbf{minimizzazione delle distanze} tra la funzione approssimante $g_n(x)$
 e la funzione approssimata $f(x)$.
 
-Dunque, cerchiamo di approssimare $g_n(x)$ in modo che si avvicini
-il più possibile a $f(x_i)$ al fine di mantenere la condizione di
-interpolazione $g_n(x_i) \sim f(x_i)$.
+Dunque, cerchiamo di costruire $g_n(x)$ in modo che approssimi
+il più possibile $f(x_i)$, mantenendo la condizione
+$g_n(x_i) \sim f(x_i)$.
 
 \begin{definizione}[Funzione approssimante nei minimi quadrati discreti]
 La funzione approssimante $g_n(x)$ è una \textbf{combinazione lineare}
@@ -739,8 +739,8 @@ L'idea fondamentale è che si disponga di un numero $M+1$ di punti
         (si approssima con una funzione ``semplice'' a pochi parametri).
 \end{itemize}
 
-È sufficiente e desiderabile che la funzione approssimante ottenga
-solo di grado $n$ per un'approssimazione già sufficientemente precisa,
+È sufficiente e desiderabile che la funzione approssimante sia
+di grado $n$ per ottenere un'approssimazione già sufficientemente precisa,
 piuttosto che interpolare esattamente tutti gli $M+1$ punti.
 
 \subsection{Formulazione matriciale: $g_n = A\alpha$}
@@ -802,7 +802,7 @@ $A\boldsymbol{\alpha}$.
 
 \subsection{Il funzionale da minimizzare}
 
-Lo scopo dei minimi quadrati è fare in modo che $g_n$ distia il meno
+Lo scopo dei minimi quadrati è fare in modo che $g_n$ disti il meno
 possibile da $\mathbf{f}$ \textbf{secondo la norma 2} (al quadrato della
 distanza), ovvero \textbf{secondo la norma 2 al quadrato della distanza}
 (differenza). Si vuole dunque minimizzare il funzionale:
@@ -1067,12 +1067,12 @@ Le \textbf{spline cubiche} corrispondono al caso $n = 3$: ogni pezzo è un
 polinomio di terzo grado. Poiché $s_i(x) \in P_3$, la formula generale è:
 
 \begin{equation}
-  \boxed{s_i(x) = a_3\,x^3 + a_2\,x^2 + a_1\,x + a_0,}
+  \boxed{s_i(x) = a_{3,i}\,x^3 + a_{2,i}\,x^2 + a_{1,i}\,x + a_{0,i}}
   \qquad i = 0, 1, \ldots, r-1.
   \label{eq:spline-cubica}
 \end{equation}
 
-\noindent dove i coefficienti $a_0, a_1, a_2, a_3$ dipendono in generale
+\noindent dove i coefficienti $a_{0,i}, a_{1,i}, a_{2,i}, a_{3,i}$ dipendono
 dall'indice $i$ (ogni pezzo ha i propri quattro coefficienti).
 
 \subsubsection*{Conteggio delle incognite}
@@ -1382,7 +1382,7 @@ dove l'\textbf{$i$-esimo insieme di Gershgorin} (relativo all'$i$-esima riga di 
 \]
 \end{teorema}
 
-\noindent\textbf{Significato geometrico.} Ogni insieme $K_i$ è una \textbf{circonferenza nel
+\noindent\textbf{Significato geometrico.} Ogni insieme $K_i$ è un \textbf{disco chiuso nel
 piano complesso} con:
 \begin{itemize}
   \item \textbf{centro} $a_{ii}$ (l'elemento diagonale dell'$i$-esima riga),
@@ -1413,7 +1413,7 @@ rimanenti $n - k$ autovalori appartengono a $N_2$:
 stanno nell'unione delle circonferenze, ma se queste circonferenze sono separabili in due
 gruppi disgiunti, la distribuzione degli autovalori tra i due gruppi è esattamente
 determinata dal numero di cerchi in ciascun gruppo. Un caso speciale si presenta quando
-$N_1 = H_1 \cup H_2$ (due cerchi) e $N_2 = K_1$ (un cerchio): allora $N_1$ contiene
+$N_1 = K_1 \cup K_2$ (due dischi) e $N_2 = K_3$ (un disco): allora $N_1$ contiene
 esattamente due autovalori e $N_2$ ne contiene uno.
 
 \subsection{Predominanza Diagonale implica Non Singolarità}
@@ -1488,7 +1488,7 @@ Il \textbf{metodo delle potenze} è un algoritmo iterativo che permette di appro
 l'\textbf{autovalore di modulo massimo} di una matrice $A$ e il suo corrispondente
 \textbf{autovettore}. Fissato un vettore iniziale $v^{(0)}$, si genera la successione:
 \[
-  \bigl\{ v^{(k)} = A\,v^{(k-1)} \bigr\}_{k=0}^{\infty}.
+  \bigl\{ v^{(k)} = A\,v^{(k-1)} \bigr\}_{k=1}^{\infty}.
 \]
 Ogni passo consiste dunque in una semplice moltiplicazione matrice-vettore.
 
@@ -1628,7 +1628,7 @@ Per ogni iterazione $k = 1, 2, 3, \ldots$:
 \[
   \begin{cases}
     v^{(k)} = A\,t^{(k-1)} & \text{(moltiplica per $A$ il vettore normalizzato)}\\[6pt]
-    \lambda_i^{(k)} = \dfrac{v^{(k)}(r)}{t^{(k-1)}(r)}
+    \lambda_1^{(k)} = \dfrac{v^{(k)}(r)}{t^{(k-1)}(r)}
       & \leftarrow \textbf{Approssimazione dell'autovalore}\\[10pt]
     t^{(k)} = \dfrac{v^{(k)}}{\|v^{(k)}\|_\infty}
       & \leftarrow \textbf{Approssimazione dell'autovettore}
@@ -1644,7 +1644,7 @@ Poiché il processo non può andare all'infinito, si introduce un valore di toll
 $\mathtt{toll} > 0$ e si arresta il ciclo non appena la variazione dell'autovalore tra due
 iterazioni successive diventa sufficientemente piccola:
 \[
-  \boxed{\bigl|\lambda_i^{(k)} - \lambda_i^{(k-1)}\bigr| < \mathtt{toll}.}
+  \boxed{\bigl|\lambda_1^{(k)} - \lambda_1^{(k-1)}\bigr| < \mathtt{toll}.}
 \]
 La scelta di $\mathtt{toll}$ dipende dalla precisione richiesta: valori tipici sono
 $10^{-6}$ o $10^{-8}$.
@@ -1669,5 +1669,457 @@ Il ragionamento si articola così:
         $x_1$, il rapporto tra componenti approssima $\lambda_1$.
 \end{enumerate}
 \end{osservazione}
+
+
+% =============================================================================
+\section{Valutazione Indiretta del Resto}
+% =============================================================================
+
+\subsection{Motivazione}
+
+Quando si parla di \textbf{valutazione indiretta del resto}, ci si riferisce
+a un metodo per stimare l'errore di una formula di quadratura numerica
+\emph{senza} conoscere esplicitamente la derivata di $f$ di ordine elevato
+che compare nell'espressione teorica del resto. L'idea è confrontare due
+approssimazioni dello stesso integrale $I = \int_a^b f(x)\,dx$, ottenute
+con passi diversi, e ricavare la stima del resto dalla loro differenza.
+
+\subsection{Impostazione: due approssimazioni con passi diversi}
+
+Consideriamo una formula di quadratura di \textbf{grado di precisione $p$}.
+Il termine di errore di tale formula, applicata con passo $h$, ha la forma
+generale:
+\[
+  R = f^{(p+1)}(\varepsilon)\,h^{p+2}\,\gamma,
+\]
+dove $\gamma$ è una costante che dipende \emph{solo} dalla formula scelta
+(non da $f$ né da $h$), e $\varepsilon$ è un punto incognito in $[a,b]$.
+
+Calcoliamo due approssimazioni distinte dello stesso integrale:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Integrale $\tilde{I}_1$ (passo grande)} & \textbf{Integrale $\tilde{I}_2$ (passo dimezzato)} \\
+\hline
+$h_1 = \dfrac{b-a}{n}$ & $h_2 = \dfrac{h_1}{2}$ \\[8pt]
+$R_1 = f^{(p+1)}(\varepsilon_1)\,h_1^{p+2}\,\gamma$ &
+$R_2 = f^{(p+1)}(\varepsilon_2)\,h_2^{p+2}\cdot 2\gamma$ \\[6pt]
+$a < \varepsilon_1 < b$ & $a < \varepsilon_2 < b$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent Il fattore $2$ in $R_2$ nasce dal fatto che $\tilde{I}_2$ usa il
+doppio dei sottointervalli rispetto a $\tilde{I}_1$: la somma degli errori
+locali su due sottointervalli di ampiezza $h_2$ introduce un fattore $2$.
+
+Poiché l'integrale $I$ è unico, valgono simultaneamente:
+\[
+  I = \tilde{I}_1 + R_1 \qquad \text{e} \qquad I = \tilde{I}_2 + R_2.
+\]
+
+\subsection{Derivazione della formula per $R_2$}
+
+\noindent\textbf{Passo 1.} Sottraendo membro a membro le due equazioni:
+\[
+  0 = \tilde{I}_1 + R_1 - \tilde{I}_2 - R_2.
+\]
+Portando le approssimazioni a sinistra:
+\begin{equation}
+  \tilde{I}_1 - \tilde{I}_2 = R_2 - R_1 \qquad \Longleftrightarrow \qquad
+  R_1 - R_2 = \tilde{I}_2 - \tilde{I}_1.
+  \label{eq:diff-I-resto}
+\end{equation}
+
+\noindent\textbf{Passo 2.} Sostituiamo le espressioni di $R_1$ e $R_2$,
+approssimando $f^{(p+1)}(\varepsilon_1) \approx f^{(p+1)}(\varepsilon_2)
+\approx f^{(p+1)}(\varepsilon)$ (i due punti $\varepsilon_1$, $\varepsilon_2$
+appartengono entrambi a $[a,b]$):
+
+\begin{align*}
+  R_1 - R_2
+  &= f^{(p+1)}(\varepsilon)\,h_1^{p+2}\,\gamma
+   - f^{(p+1)}(\varepsilon)\!\left(\frac{h_1}{2}\right)^{\!p+2}\!\cdot 2\gamma \\[4pt]
+  &= f^{(p+1)}(\varepsilon)\,\gamma\,h_1^{p+2}
+     \left[1 - \frac{2}{2^{p+2}}\right]
+   = f^{(p+1)}(\varepsilon)\,\gamma\,h_1^{p+2}
+     \left[1 - \frac{1}{2^{p+1}}\right] \\[4pt]
+  &= f^{(p+1)}(\varepsilon)\,\gamma\,h_1^{p+2}\cdot
+     \frac{2^{p+1}-1}{2^{p+1}}.
+\end{align*}
+
+\noindent\textbf{Passo 3.} Osserviamo che $R_2$ vale:
+\[
+  R_2 = f^{(p+1)}(\varepsilon)\!\left(\frac{h_1}{2}\right)^{\!p+2}\!\cdot 2\gamma
+      = f^{(p+1)}(\varepsilon)\,\gamma\,h_1^{p+2}\cdot\frac{1}{2^{p+1}}.
+\]
+
+Confrontando con l'espressione di $R_1 - R_2$:
+\[
+  R_1 - R_2 = f^{(p+1)}(\varepsilon)\,\gamma\,h_1^{p+2}\cdot
+  \frac{2^{p+1}-1}{2^{p+1}} = R_2\,(2^{p+1}-1).
+\]
+
+\noindent\textbf{Passo 4.} Dalla~\eqref{eq:diff-I-resto},
+$R_1 - R_2 = \tilde{I}_2 - \tilde{I}_1$, quindi:
+\[
+  \tilde{I}_2 - \tilde{I}_1 = R_2\,(2^{p+1}-1).
+\]
+
+\begin{equation}
+  \boxed{R_2 \approx \frac{\tilde{I}_2 - \tilde{I}_1}{2^{p+1}-1}}
+  \label{eq:R2-indiretta}
+\end{equation}
+
+\noindent Questo risultato è notevole: il resto $R_2$ della formula più
+accurata (con passo $h_2 = h_1/2$) può essere stimato \emph{senza conoscere
+la derivata di ordine elevato di $f$}, semplicemente a partire dalla
+differenza tra le due approssimazioni, scalata dalla costante
+$2^{p+1}-1$ (che dipende solo dal grado di precisione della formula).
+
+\begin{intuizione}
+Dimezzando il passo, l'errore si riduce di un fattore noto ($2^{p+1}$).
+La differenza $\tilde{I}_2 - \tilde{I}_1$ ``contiene'' quasi per intero
+l'errore $R_1$, meno il nuovo errore $R_2$: quindi $\tilde{I}_2 - \tilde{I}_1
+\approx R_1 - R_2 = R_2(2^{p+1}-1)$, e dividendo per $2^{p+1}-1$ si ottiene
+proprio $R_2$.
+\end{intuizione}
+
+% =============================================================================
+\section{Estrapolazione di Richardson}
+% =============================================================================
+
+\subsection{Criterio di arresto automatico}
+
+L'estrapolazione di Richardson utilizza la stima~\eqref{eq:R2-indiretta}
+per definire un \textbf{criterio di arresto automatico}: si verifica se il
+resto stimato è inferiore a una tolleranza fissata $\mathtt{toll} > 0$:
+
+\begin{equation}
+  |R_2| \approx \frac{|\tilde{I}_2 - \tilde{I}_1|}{2^{p+1}-1} < \mathtt{toll}.
+  \label{eq:criterio-richardson}
+\end{equation}
+
+\subsection{Algoritmo adattivo}
+
+In pratica l'algoritmo procede come segue:
+\begin{enumerate}
+  \item Si parte con un intervallo poco preciso ($n$ piccolo, passo $h_1$
+        grande) e si calcola $\tilde{I}_1$.
+  \item Si dimezza il passo ($h_2 = h_1/2$, raddoppiando i sottointervalli)
+        e si calcola $\tilde{I}_2$.
+  \item Si verifica il criterio~\eqref{eq:criterio-richardson}:
+    \begin{itemize}
+      \item Se $|\tilde{I}_2 - \tilde{I}_1|/(2^{p+1}-1) < \mathtt{toll}$:
+            ci si ferma e si accetta $\tilde{I}_2$ come approssimazione
+            dell'integrale.
+      \item Altrimenti: si pone $\tilde{I}_1 \leftarrow \tilde{I}_2$,
+            si dimezza ulteriormente il passo e si ripete dal punto~2.
+    \end{itemize}
+\end{enumerate}
+
+Non appena l'errore si dimostra inferiore alla tolleranza, il metodo si
+ferma. In pratica ci si sposta da un intervallo grezzo verso una
+discretizzazione sempre più fine, \emph{solo quanto necessario}.
+
+\begin{osservazione}[Perché dividere per $2^{p+1}-1$?]
+La differenza grezza $|\tilde{I}_2 - \tilde{I}_1|$ sovrastima il resto $R_2$
+di un fattore $(2^{p+1}-1)$.
+\begin{itemize}
+  \item Per il \textbf{trapezio} ($p=1$): $2^{p+1}-1 = 3$, quindi la
+        stima grezza è tre volte troppo pessimista.
+  \item Per \textbf{Cavalieri-Simpson} ($p=3$): $2^{p+1}-1 = 15$.
+\end{itemize}
+Dividere per $2^{p+1}-1$ fornisce una stima molto più accurata del
+vero errore $R_2$.
+\end{osservazione}
+
+% =============================================================================
+\section{Stabilità del Metodo di Eliminazione di Gauss (MEG)}
+% =============================================================================
+
+\subsection{Definizione e obiettivo del MEG}
+
+Il \textbf{Metodo di Eliminazione di Gauss} (MEG) è un \textbf{metodo
+diretto} per la risoluzione di sistemi lineari. Si definisce \emph{diretto}
+perché opera sulla matrice di partenza, modificandola al fine di ottenere
+una matrice equivalente più facile da trattare. Il MEG restituisce un sistema
+equivalente con matrice \textbf{triangolare superiore}.
+
+Dato il sistema $A\mathbf{x} = \mathbf{b}$ con $\det(A)\neq 0$, il MEG
+ottiene la matrice triangolare superiore applicando trasformazioni sulla
+matrice dei coefficienti $A$ e sul vettore dei termini noti $\mathbf{b}$.
+
+\subsection{Descrizione dell'algoritmo}
+
+Al \textbf{passo $i$} il metodo:
+\begin{itemize}
+  \item sottrae alle righe sottostanti la $i$-esima riga, moltiplicata
+        per opportuni \textbf{moltiplicatori di Gauss} $m_{ki}$, con
+        l'obiettivo di azzerare tutti gli elementi della colonna $i$ al
+        di sotto dell'elemento diagonale $a_{ii}$;
+  \item si ferma al passo $i = n-1$, perché all'ultimo passaggio si
+        sottrae all'ultima riga la penultima, completando la
+        triangolarizzazione.
+\end{itemize}
+
+\subsection{Esempio: sistema $3 \times 3$}
+
+Consideriamo:
+\[
+  A^{(1)}\mathbf{x} = \mathbf{b}^{(1)}, \qquad
+  \begin{cases}
+    a_{11}^{(1)}\,x_1 + a_{12}^{(1)}\,x_2 + a_{13}^{(1)}\,x_3 = b_1^{(1)} \\
+    a_{21}^{(1)}\,x_1 + a_{22}^{(1)}\,x_2 + a_{23}^{(1)}\,x_3 = b_2^{(1)} \\
+    a_{31}^{(1)}\,x_1 + a_{32}^{(1)}\,x_2 + a_{33}^{(1)}\,x_3 = b_3^{(1)}
+  \end{cases}
+\]
+
+\subsubsection*{Passo $i=1$: azzerare la colonna 1 sotto $a_{11}^{(1)}$}
+
+Per ogni riga al di sotto della prima si calcola un moltiplicatore distinto:
+\[
+  m_{21} = \frac{a_{21}^{(1)}}{a_{11}^{(1)}}, \qquad
+  m_{31} = \frac{a_{31}^{(1)}}{a_{11}^{(1)}}.
+\]
+
+\noindent\textbf{Riga 2:} $\;\text{Riga}_2 \leftarrow \text{Riga}_2 - m_{21}\cdot\text{Riga}_1$,
+cosicché $a_{21}^{(1)}$ diventi zero.
+
+\noindent\textbf{Riga 3:} $\;\text{Riga}_3 \leftarrow \text{Riga}_3 - m_{31}\cdot\text{Riga}_1$,
+cosicché $a_{31}^{(1)}$ diventi zero.
+
+Dopo il passo $i=1$ si ottiene $A^{(2)}\mathbf{x} = \mathbf{b}^{(2)}$:
+\[
+  \begin{cases}
+    a_{11}^{(1)}\,x_1 + a_{12}^{(1)}\,x_2 + a_{13}^{(1)}\,x_3 = b_1^{(1)} \\
+    \hphantom{a_{11}^{(1)}\,x_1 +}\; a_{22}^{(2)}\,x_2 + a_{23}^{(2)}\,x_3 = b_2^{(2)} \\
+    \hphantom{a_{11}^{(1)}\,x_1 +}\; a_{32}^{(2)}\,x_2 + a_{33}^{(2)}\,x_3 = b_3^{(2)}
+  \end{cases}
+\]
+
+\subsubsection*{Passo $i=2$: azzerare $a_{32}^{(2)}$}
+
+\[
+  m_{32} = \frac{a_{32}^{(2)}}{a_{22}^{(2)}}, \qquad
+  \text{Riga}_3 \leftarrow \text{Riga}_3 - m_{32}\cdot\text{Riga}_2.
+\]
+
+Si ottiene così la \textbf{matrice triangolare superiore cercata}:
+\[
+  \begin{pmatrix}
+    a_{11}^{(1)} & a_{12}^{(1)} & a_{13}^{(1)} \\
+    0            & a_{22}^{(2)} & a_{23}^{(2)} \\
+    0            & 0            & a_{33}^{(3)}
+  \end{pmatrix}
+  \mathbf{x} =
+  \begin{pmatrix} b_1^{(1)} \\ b_2^{(2)} \\ b_3^{(3)} \end{pmatrix}
+\]
+
+Il sistema triangolare si risolve poi tramite \textbf{sostituzione
+all'indietro}: prima $x_3$, poi $x_2$, infine $x_1$.
+
+\subsection{Stabilità e Pivoting}
+
+\subsubsection*{Il problema della cancellazione numerica}
+
+La stabilità del MEG è un problema critico: ogni divisione per $a_{ii}$
+e ogni sottrazione tra quantità floating point può introdurre
+\textbf{cancellazione numerica}, cioè la perdita di cifre significative
+quando si sottraggono due numeri quasi uguali. Gli errori di arrotondamento
+possono accumularsi e produrre risultati molto inaccurati.
+
+\subsubsection*{Il pivot}
+
+Il \textbf{pivot} è l'elemento $a_{ii}^{(i)}$ che compare al denominatore
+del moltiplicatore $m_{ki} = a_{ki}^{(i)}/a_{ii}^{(i)}$: è il primo elemento
+non nullo della riga $i$ (nella colonna corrente). Se il pivot è piccolo
+in modulo, i moltiplicatori $m_{ki}$ diventano grandi, amplificando gli
+errori di arrotondamento.
+
+\subsubsection*{Strategia del pivoting}
+
+Per evitare questi problemi si adotta il \textbf{pivoting}: si scambiano
+righe (e/o colonne) per portare come pivot l'elemento di modulo massimo
+nella colonna corrente. In questo modo $|m_{ki}| \le 1$, limitando la
+propagazione degli errori.
+
+\begin{itemize}
+  \item \textbf{Pivoting parziale} (solo righe, o solo colonne): si cerca
+        il massimo in modulo nella colonna corrente e si scambia la riga
+        corrente con quella che lo contiene. È la strategia più usata.
+  \item \textbf{Pivoting totale} (righe \emph{e} colonne): si cerca il
+        massimo nella sotto-matrice corrente, scambiando sia righe che colonne.
+        Massima stabilità, costo computazionale leggermente maggiore.
+\end{itemize}
+
+\begin{intuizione}
+Il pivoting è un atto di ``buon senso numerico'': dividere per il numero
+più grande della colonna produce moltiplicatori $|m_{ki}| \le 1$,
+minimizzando l'amplificazione degli errori di arrotondamento ad ogni passo.
+\end{intuizione}
+
+% =============================================================================
+\section{Metodo di Thomas}
+% =============================================================================
+
+\subsection{Contesto: matrici tridiagonali}
+
+Il \textbf{Metodo di Thomas} è una versione ridotta e ottimizzata della
+fattorizzazione $LU$, applicabile specificamente alle \textbf{matrici
+tridiagonali}, cioè matrici quadrate con elementi non nulli soltanto sulla
+diagonale principale, sulla sopradiagonale e sulla sottodiagonale. Una
+matrice tridiagonale di ordine $n$ ha la struttura:
+
+\[
+  A =
+  \begin{pmatrix}
+    a_1  & c_1  & 0    & \cdots & 0      \\
+    d_1  & a_2  & c_2  & \cdots & 0      \\
+    0    & d_2  & a_3  & \cdots & 0      \\
+    \vdots &   & \ddots & \ddots & \vdots \\
+    0    & 0    & \cdots & d_{n-1} & a_n
+  \end{pmatrix}
+\]
+
+\noindent dove $a_i$ è la diagonale principale, $c_i$ la sopradiagonale
+($i=1,\ldots,n-1$) e $d_i$ la sottodiagonale ($i=1,\ldots,n-1$).
+
+\subsection{Fattorizzazione $LU$ per matrici tridiagonali}
+
+La matrice $A$ viene fattorizzata come $A = LU$, dove $L$ è bidiagonale
+inferiore (con $1$ sulla diagonale e i moltiplicatori $\beta_i$ sulla
+sottodiagonale) e $U$ è bidiagonale superiore (con $\alpha_i$ sulla
+diagonale e gli stessi $c_i$ di $A$ sulla sopradiagonale):
+
+\[
+  \underbrace{
+    \begin{pmatrix}
+      a_1  & c_1  & 0    & 0 \\
+      d_1  & a_2  & c_2  & 0 \\
+      0    & d_2  & a_3  & c_3 \\
+      0    & 0    & d_3  & a_4
+    \end{pmatrix}
+  }_{A}
+  =
+  \underbrace{
+    \begin{pmatrix}
+      1       & 0       & 0  & 0 \\
+      \beta_2 & 1       & 0  & 0 \\
+      0       & \beta_3 & 1  & 0 \\
+      0       & 0       & \beta_4 & 1
+    \end{pmatrix}
+  }_{L}
+  \underbrace{
+    \begin{pmatrix}
+      \alpha_1 & c_1      & 0        & 0 \\
+      0        & \alpha_2 & c_2      & 0 \\
+      0        & 0        & \alpha_3 & c_3 \\
+      0        & 0        & 0        & \alpha_4
+    \end{pmatrix}
+  }_{U}
+\]
+
+\noindent Come si può notare, i valori $c_i$ di $U$ sono gli \textbf{stessi}
+della matrice $A$: la sopradiagonale non viene modificata dalla
+fattorizzazione.
+
+\subsection{Relazioni ricorsive per $\alpha_i$ e $\beta_i$}
+
+Dall'uguaglianza $A = LU$, confrontando elemento per elemento, si ricavano
+le seguenti relazioni ricorsive:
+
+\begin{equation}
+  \begin{cases}
+    \alpha_1 = a_1 \\[6pt]
+    \beta_i  = \dfrac{d_{i-1}}{\alpha_{i-1}}, \quad i = 2, 3, \ldots, n \\[8pt]
+    \alpha_i = a_i - \beta_i\,c_{i-1}, \quad i = 2, 3, \ldots, n
+  \end{cases}
+  \label{eq:thomas-relazioni}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $\alpha_1 = a_1$ inizializza la ricorrenza con il primo elemento
+        diagonale;
+  \item $\beta_i = d_{i-1}/\alpha_{i-1}$ è il \textbf{moltiplicatore di
+        Gauss} al passo $i$: è l'elemento sottodiagonale $d_{i-1}$ diviso
+        per il pivot $\alpha_{i-1}$;
+  \item $\alpha_i = a_i - \beta_i\,c_{i-1}$ aggiorna la diagonale di $U$
+        sottraendo la correzione dovuta all'eliminazione del passo precedente.
+\end{itemize}
+
+\begin{osservazione}[Caso simmetrico]
+Quando $A$ è \textbf{simmetrica} (ovvero $c_i = d_i$ per ogni $i$), la
+formula si semplifica in $\alpha_i = a_i - d_i\,\beta_i$, poiché
+$c_{i-1} = d_{i-1} = d_i$ nella notazione scalare compatta.
+\end{osservazione}
+
+\subsection{Soluzione del sistema}
+
+Una volta calcolati $\alpha_i$ e $\beta_i$ (in tempo $\mathcal{O}(n)$),
+il sistema $A\mathbf{x} = \mathbf{b}$ si risolve tramite due sistemi
+bidiagonali:
+\begin{enumerate}
+  \item \textbf{Sostituzione in avanti:} $L\mathbf{y} = \mathbf{b}$
+        (da sinistra verso destra, in $\mathcal{O}(n)$).
+  \item \textbf{Sostituzione all'indietro:} $U\mathbf{x} = \mathbf{y}$
+        (da destra verso sinistra, in $\mathcal{O}(n)$).
+\end{enumerate}
+
+\begin{intuizione}
+Il Metodo di Thomas riduce il costo della fattorizzazione $LU$ da
+$\mathcal{O}(n^3)$ (caso generale) a $\mathcal{O}(n)$, sfruttando la
+struttura sparsa della matrice tridiagonale. È il metodo standard per
+sistemi lineari che emergono dalla discretizzazione di equazioni
+differenziali (es.\ differenze finite, spline cubiche): in quei contesti
+la matrice dei coefficienti è tipicamente tridiagonale.
+\end{intuizione}
+
+% =============================================================================
+\section{Quantificazione dell'Errore Algoritmico}
+% =============================================================================
+
+\subsection{Definizione}
+
+L'\textbf{errore algoritmico} è l'errore presente \emph{a priori}
+nell'utilizzo del calcolatore: nasce dal fatto che ogni operazione aritmetica
+in virgola mobile introduce un piccolo errore di arrotondamento, e questi
+errori si propagano e si sommano lungo tutto l'algoritmo.
+
+\begin{definizione}[Errore Algoritmico]
+Date $M$ operazioni aritmetiche svolte su $n$ dati
+$(x_1, x_2, \ldots, x_n)$ durante l'esecuzione di un algoritmo,
+si definisce \textbf{errore algoritmico}:
+\begin{equation}
+  \varepsilon_{ALG}
+  = \sum_{i=1}^{M} \theta_i(x_1, x_2, \ldots, x_n)\,y_i
+  \label{eq:errore-algoritmico}
+\end{equation}
+dove:
+\begin{itemize}
+  \item $M$ è il numero totale di operazioni aritmetiche eseguite
+        nell'algoritmo;
+  \item $\theta_i(x_1, x_2, \ldots, x_n)$ è il \textbf{coefficiente di
+        amplificazione} dell'$i$-esima operazione: dipende dai dati in
+        ingresso e misura quanto l'errore relativo di quella operazione
+        viene amplificato nel risultato finale;
+  \item $y_i \,:=\, \varepsilon_{Ri}$ è l'\textbf{errore relativo}
+        dell'$i$-esima operazione aritmetica, dovuto all'arrotondamento
+        in aritmetica floating point.
+\end{itemize}
+\end{definizione}
+
+\begin{intuizione}
+L'errore algoritmico è una \emph{somma pesata} degli errori relativi di
+ciascuna operazione: il peso $\theta_i$ misura quanto quella specifica
+operazione incide sul risultato finale. Un'operazione con $|\theta_i|$ grande
+è un \textbf{punto critico} dell'algoritmo: anche un piccolo errore relativo
+$y_i$ viene amplificato in modo significativo. Analizzare $\varepsilon_{ALG}$
+equivale quindi a identificare le operazioni potenzialmente instabili e, se
+possibile, riformulare l'algoritmo per ridurne l'amplificazione — esattamente
+come il pivoting riduce i moltiplicatori nel MEG.
+\end{intuizione}
 
 \end{document}
