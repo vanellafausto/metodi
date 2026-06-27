@@ -2122,4 +2122,266 @@ possibile, riformulare l'algoritmo per ridurne l'amplificazione — esattamente
 come il pivoting riduce i moltiplicatori nel MEG.
 \end{intuizione}
 
+
+% =============================================================================
+\section{Trasformata Veloce di Fourier (FFT)}
+% =============================================================================
+
+\subsection{Motivazione e complessità}
+
+La \textbf{Trasformata Discreta di Fourier} (TDF o DFT) di ordine $n$,
+calcolata direttamente per definizione, ha complessità computazionale
+$\mathcal{O}(n^2)$: per ciascuno degli $n$ coefficienti $\hat{f}_j$
+occorre sommare $n$ termini.
+
+La \textbf{Trasformata Veloce di Fourier} (FFT, \emph{Fast Fourier
+Transform}) è un algoritmo che produce la \emph{stessa} TDF con
+complessità \textbf{notevolmente inferiore}:
+\[
+  \mathcal{O}(n \log n) \quad \text{invece di} \quad \mathcal{O}(n^2)
+\]
+L'idea chiave è \emph{dividere} il problema di ordine $n$ in due
+sotto-problemi di ordine $n/2$ e applicare lo stesso principio
+ricorsivamente (\emph{divide et impera}).
+
+\subsection{Separazione dei campioni in indici pari e dispari}
+
+Siano $f_k = f(x_k)$, $k = 0, 1, \ldots, n-1$, i valori campionati.
+Separiamo i campioni in due gruppi in base alla parità dell'indice:
+\[
+  \text{Indici pari:}\quad   f_0,\, f_2,\, f_4,\, \ldots,\, f_{n-2}
+  \qquad
+  \text{Indici dispari:}\quad f_1,\, f_3,\, f_5,\, \ldots,\, f_{n-1}
+\]
+Definiamo $M := \dfrac{n}{2}$ (si suppone $n$ pari).
+
+\subsection{Le due sotto-trasformate di ordine \texorpdfstring{$M$}{M}}
+
+\begin{definizione}[Sotto-trasformate pari e dispari]
+Indichiamo con $\omega_n = e^{i\frac{2\pi}{n}}$ la radice $n$-esima
+primitiva dell'unità. Le due \textbf{sotto-TDF di ordine $M$} sono:
+\begin{align}
+  \hat{f}_j^{(1)}
+  &= \sum_{k=0}^{M-1} f_{2k}\,\omega_n^{-2kj}
+   = f_0 + f_2\,\omega_n^{-2j} + \cdots + f_{n-2}\,\omega_n^{-2(M-1)j}
+   \label{eq:fft-pari} \\[6pt]
+  \hat{f}_j^{(2)}
+  &= \sum_{k=0}^{M-1} f_{2k+1}\,\omega_n^{-2kj}
+   = f_1 + f_3\,\omega_n^{-2j} + \cdots + f_{n-1}\,\omega_n^{-2(M-1)j}
+   \label{eq:fft-dispari}
+\end{align}
+dove $j = 0, 1, \ldots, M-1$.
+\end{definizione}
+
+\subsection{Relazione tra \texorpdfstring{$\omega_M$}{omegaM} e \texorpdfstring{$\omega_n$}{omegan}}
+
+Definiamo $\omega_M = e^{i\frac{2\pi}{M}}$ la radice $M$-esima
+primitiva dell'unità. Osserviamo che:
+\begin{equation}
+  \omega_M
+  = e^{i\frac{2\pi}{M}}
+  = e^{i\frac{2\pi}{n/2}}
+  = e^{i\frac{4\pi}{n}}
+  = \left(e^{i\frac{2\pi}{n}}\right)^2
+  = \omega_n^2
+  \label{eq:omegaM-omegan}
+\end{equation}
+Quindi $\omega_M = \omega_n^2$, cioè la radice primitiva di ordine $M$
+è il \emph{quadrato} di quella di ordine $n$. Di conseguenza:
+\[
+  \omega_n^{-2kj} = (\omega_n^2)^{-kj} = \omega_M^{-kj}
+\]
+e le sotto-trasformate \eqref{eq:fft-pari}--\eqref{eq:fft-dispari}
+sono \textbf{DFT di ordine $M$} applicate rispettivamente ai campioni
+con indice pari e ai campioni con indice dispari.
+
+\subsection{Derivazione della formula farfalla (Butterfly)}
+
+Partiamo dalla definizione della TDF di ordine $n$:
+\begin{equation}
+  \hat{f}_j
+  = \sum_{k=0}^{n-1} f_k\,\omega_n^{-jk}
+  = f_0 + f_1\,\omega_n^{-j} + f_2\,\omega_n^{-2j}
+    + f_3\,\omega_n^{-3j} + \cdots + f_{n-1}\,\omega_n^{-(n-1)j}
+  \label{eq:tdf-def-fft}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $\hat{f}_j$ è il $j$-esimo coefficiente della TDF;
+  \item $\omega_n^{-jk} = e^{-i\frac{2\pi jk}{n}}$ è il fattore
+        di fase associato al campione $f_k$ nella frequenza $j$.
+\end{itemize}
+
+Raggruppiamo separatamente i termini a indice pari e quelli a indice
+dispari:
+\begin{align*}
+  \hat{f}_j
+  &= \underbrace{f_0 + f_2\,\omega_n^{-2j}
+     + f_4\,\omega_n^{-4j} + \cdots + f_{n-2}\,\omega_n^{-2(M-1)j}}
+     _{\displaystyle = \hat{f}_j^{(1)}} \\
+  &\quad + \omega_n^{-j}\,
+    \underbrace{\bigl(f_1 + f_3\,\omega_n^{-2j}
+     + f_5\,\omega_n^{-4j} + \cdots + f_{n-1}\,\omega_n^{-2(M-1)j}\bigr)}
+     _{\displaystyle = \hat{f}_j^{(2)}}
+\end{align*}
+
+Otteniamo la \textbf{prima formula farfalla}:
+\begin{equation}
+  \boxed{
+    \hat{f}_j = \hat{f}_j^{(1)} + \omega_n^{-j}\,\hat{f}_j^{(2)},
+    \qquad j = 0, 1, \ldots, M-1
+  }
+  \label{eq:butterfly-plus}
+\end{equation}
+
+Le due sotto-trasformate producono però solo $M = n/2$ valori ciascuna,
+mentre $\hat{f}$ ha $n$ componenti. Occorre quindi calcolare anche la
+seconda metà $\hat{f}_{j+M}$ per $j = 0, \ldots, M-1$.
+
+\subsubsection{Calcolo di \texorpdfstring{$\hat{f}_{j+M}$}{f\_{j+M}}}
+
+Dalla definizione della TDF:
+\begin{equation}
+  \hat{f}_{j+M} = \sum_{k=0}^{n-1} f_k\,\omega_n^{-(j+M)k}
+\end{equation}
+
+Separiamo il fattore esponenziale:
+\begin{align}
+  \omega_n^{-(j+M)k}
+  &= \omega_n^{-jk} \cdot \omega_n^{-Mk} \notag \\
+  &= \omega_n^{-jk} \cdot e^{-i\frac{2\pi}{n} \cdot M \cdot k} \notag \\
+  &= \omega_n^{-jk} \cdot e^{-i\frac{2\pi}{n} \cdot \frac{n}{2} \cdot k}
+     \qquad \Bigl(M = \tfrac{n}{2}\Bigr) \notag \\
+  &= \omega_n^{-jk} \cdot e^{-i\pi k} \notag \\
+  &= \omega_n^{-jk} \cdot (-1)^k
+  \label{eq:omega-shift}
+\end{align}
+dove nell'ultimo passaggio si è usato che $e^{-i\pi k} = \cos(\pi k)
+- i\sin(\pi k) = (-1)^k$ per ogni $k \in \mathbb{Z}$.
+
+Il fattore $(-1)^k$ \textbf{alterna il segno} di ciascun termine.
+Sostituendo in $\hat{f}_{j+M}$:
+\begin{align}
+  \hat{f}_{j+M}
+  &= \sum_{k=0}^{n-1} (-1)^k f_k\,\omega_n^{-jk} \notag \\
+  &= f_0 - f_1\,\omega_n^{-j} + f_2\,\omega_n^{-2j}
+     - f_3\,\omega_n^{-3j} + \cdots \notag \\
+  &= \underbrace{\bigl(f_0 + f_2\,\omega_n^{-2j} + \cdots\bigr)}_{
+       \hat{f}_j^{(1)}}
+     - \omega_n^{-j}\,
+     \underbrace{\bigl(f_1 + f_3\,\omega_n^{-2j} + \cdots\bigr)}_{
+       \hat{f}_j^{(2)}}
+  \label{eq:fft-jM-derivazione}
+\end{align}
+
+Da cui la \textbf{seconda formula farfalla}:
+\begin{equation}
+  \boxed{
+    \hat{f}_{j+M} = \hat{f}_j^{(1)} - \omega_n^{-j}\,\hat{f}_j^{(2)},
+    \qquad j = 0, 1, \ldots, M-1
+  }
+  \label{eq:butterfly-minus}
+\end{equation}
+
+\subsection{Schema riassuntivo delle formule farfalla}
+
+Le due formule \eqref{eq:butterfly-plus} e \eqref{eq:butterfly-minus}
+si scrivono in forma compatta come il seguente sistema:
+\begin{equation}
+  \begin{cases}
+    \hat{f}_j     = \hat{f}_j^{(1)} + \omega_n^{-j}\,\hat{f}_j^{(2)} \\[4pt]
+    \hat{f}_{j+M} = \hat{f}_j^{(1)} - \omega_n^{-j}\,\hat{f}_j^{(2)}
+  \end{cases}
+  \qquad j = 0, 1, \ldots, M-1
+  \label{eq:butterfly-system}
+\end{equation}
+
+\noindent dove:
+\begin{itemize}
+  \item $\hat{f}_j^{(1)}$ è la DFT di ordine $M$ dei campioni con
+        indice \textbf{pari};
+  \item $\hat{f}_j^{(2)}$ è la DFT di ordine $M$ dei campioni con
+        indice \textbf{dispari};
+  \item $\omega_n^{-j}$ è il \textbf{twiddle factor}: il fattore di fase
+        che correla le due sotto-trasformate.
+\end{itemize}
+
+\begin{intuizione}
+Le formule farfalla dimostrano un risultato potente: l'intera DFT di
+ordine $n$ si ottiene \emph{combinando} due DFT di ordine $M = n/2$.
+I coefficienti nella prima metà ($j = 0, \ldots, M-1$) si ottengono
+\emph{sommando} i contributi delle due sotto-trasformate; quelli nella
+seconda metà ($j = M, \ldots, n-1$) si ottengono \emph{sottraendo}.
+In entrambi i casi il costo aggiuntivo rispetto al calcolo delle due
+sotto-trasformate è solo una moltiplicazione per il twiddle factor
+$\omega_n^{-j}$ e un'addizione/sottrazione: operazioni di costo $O(n)$.
+\end{intuizione}
+
+\subsection{Struttura ricorsiva e complessità}
+
+L'idea si applica \textbf{ricorsivamente}: ogni sotto-trasformata di
+ordine $n/2$ può a sua volta essere decomposta in due sotto-trasformate
+di ordine $n/4$, e così via, fino a trasformate di ordine $1$ (che sono
+banalmente uguali al campione stesso, poiché la DFT di un unico elemento
+è l'elemento stesso).
+
+Generalizzando, la DFT di ordine $n$ si ottiene con 2 DFT di ordine
+$n/2$, ognuna delle quali richiede 2 DFT di ordine $n/4$, ecc.:
+
+\medskip
+\begin{center}
+\renewcommand{\arraystretch}{2.0}
+\begin{tabular}{c}
+  $\mathrm{DFT}(n)$ \\
+  $\swarrow\qquad\searrow$ \\
+  $\mathrm{DFT}\!\left(\dfrac{n}{2}\right)
+   \qquad\qquad
+   \mathrm{DFT}\!\left(\dfrac{n}{2}\right)$ \\[4pt]
+  $\swarrow\ \searrow \qquad\qquad \swarrow\ \searrow$ \\
+  $\mathrm{DFT}\!\left(\dfrac{n}{4}\right)\;
+   \mathrm{DFT}\!\left(\dfrac{n}{4}\right)
+   \quad
+   \mathrm{DFT}\!\left(\dfrac{n}{4}\right)\;
+   \mathrm{DFT}\!\left(\dfrac{n}{4}\right)$ \\
+  $\vdots$ \\[2pt]
+  $\underbrace{
+     \mathrm{DFT}(1)\;\; \mathrm{DFT}(1)\;\; \cdots\;\; \mathrm{DFT}(1)
+   }_{n\ \text{trasformate banali}}$
+\end{tabular}
+\end{center}
+\medskip
+
+\begin{osservazione}[Complessità dell'FFT]
+Se $n = 2^p$ (potenza di 2), l'albero di ricorsione ha $p = \log_2 n$
+livelli. A ogni livello occorre eseguire $\mathcal{O}(n)$ operazioni
+(combinazioni farfalla su tutti i campioni). La complessità totale è
+dunque:
+\[
+  \underbrace{\mathcal{O}(n)}_{\text{operazioni per livello}}
+  \times
+  \underbrace{\log_2 n}_{\text{livelli}}
+  = \mathcal{O}(n \log n)
+\]
+Rispetto alla DFT diretta che richiede $\mathcal{O}(n^2)$ operazioni,
+il guadagno è enorme: per $n = 10^6$ si passa da $\approx 10^{12}$
+a $\approx 2 \times 10^7$ operazioni, un miglioramento di circa cinque
+ordini di grandezza.
+\end{osservazione}
+
+\begin{intuizione}
+La FFT è uno degli algoritmi più importanti nella storia dell'informatica.
+La strategia \emph{divide et impera} — ridurre un problema di taglia $n$
+a due problemi di taglia $n/2$ — è la stessa che rende efficienti
+algoritmi come il merge sort. In questo caso, però, il risparmio
+computazionale è particolarmente drastico perché le due metà della DFT
+non sono indipendenti: condividono esattamente le stesse sotto-trasformate
+$\hat{f}_j^{(1)}$ e $\hat{f}_j^{(2)}$, che vengono calcolate
+\emph{una volta sola} e poi riutilizzate per ottenere sia $\hat{f}_j$
+che $\hat{f}_{j+M}$. Tra le innumerevoli applicazioni: elaborazione del
+segnale audio/video, compressione (MP3, JPEG), analisi spettrale,
+risoluzione numerica di equazioni alle derivate parziali e moltiplicazione
+veloce di polinomi.
+\end{intuizione}
+
 \end{document}
