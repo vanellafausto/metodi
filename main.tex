@@ -2384,4 +2384,278 @@ risoluzione numerica di equazioni alle derivate parziali e moltiplicazione
 veloce di polinomi.
 \end{intuizione}
 
+
+%=============================================================
+\section{Derivazione Numerica}
+%=============================================================
+
+\subsection{Motivazione e operatori di differenza finita}
+
+La \textbf{derivata} di una funzione è, per definizione, il limite del rapporto incrementale:
+\[
+  f'(x_i) = \lim_{h \to 0} \frac{f(x_i + h) - f(x_i)}{h}.
+\]
+Nella pratica numerica non si può calcolare quel limite in modo esatto, poiché
+si dispone di valori di $f$ solo su un insieme discreto di punti.
+L'idea di fondo è dunque quella di \emph{rinunciare al passaggio al limite}
+e usare direttamente il rapporto incrementale per un passo $h > 0$ piccolo
+ma finito.
+
+\medskip
+Supponiamo di avere $n+1$ nodi equidistanti
+$x_0 < x_1 < \cdots < x_n$ con passo $h = x_{i+1} - x_i$.
+Per ogni nodo definiamo i tre operatori canonici di differenza finita:
+
+\begin{itemize}
+  \item \textbf{Differenze Finite in Avanti (DFA)}:
+    \[
+      u(x_i) = \frac{f(x_i + h) - f(x_i)}{h}
+             := \frac{\Delta f(x_i)}{h}, \qquad i = 0,1,\ldots,n-1.
+    \]
+    Qui $\Delta f(x_i) = f(x_{i+1}) - f(x_i)$ è il simbolo standard dell'operatore
+    di \emph{differenza in avanti}.
+    L'approssimazione corrisponde geometricamente alla \textbf{pendenza della
+    retta secante} passante per i punti $(x_i, f(x_i))$ e
+    $(x_{i+1}, f(x_{i+1}))$.
+    Notare che il metodo è definito per $i = 0, \ldots, n-1$: non può fornire
+    il valore all'ultimo nodo $x_n$.
+
+  \item \textbf{Differenze Finite Indietro (DFI)}:
+    \[
+      u(x_i) = \frac{f(x_i) - f(x_{i-1})}{h}
+             := \frac{\nabla f(x_i)}{h}, \qquad i = 1,2,\ldots,n.
+    \]
+    Qui $\nabla f(x_i) = f(x_i) - f(x_{i-1})$ è l'operatore di
+    \emph{differenza indietro}.
+    Il metodo è definito per $i = 1, \ldots, n$: non può fornire il valore al
+    primo nodo $x_0$.
+
+  \item \textbf{Differenze Finite Centrate (DFC)}:
+    \[
+      u(x_i) = \frac{f(x_{i+1}) - f(x_{i-1})}{2h}, \qquad i = 1,2,\ldots,n-1.
+    \]
+    Il metodo utilizza i due vicini simmetrici di $x_i$ e non è definito nei
+    nodi estremi $x_0$ e $x_n$.
+\end{itemize}
+
+\subsection{Analisi dell'errore per le DFA}
+
+Per quantificare la bontà dell'approssimazione DFA, sviluppiamo
+$f(x_{i+1})$ in serie di Taylor attorno a $x_i$.
+Esiste $\xi \in \,]x_i, x_{i+1}[$ tale che:
+\[
+  f(x_{i+1}) = f(x_i) + h f'(x_i) + h^2 \frac{f''(\xi)}{2}.
+\]
+Sottraiamo $f(x_i)$ da ambo i membri e dividiamo per $h$:
+\[
+  \frac{f(x_{i+1}) - f(x_i)}{h} = f'(x_i) + \frac{h}{2} f''(\xi).
+\]
+Il lato sinistro è proprio $u(x_i)$, quindi:
+\[
+  u(x_i) = f'(x_i) + \frac{h}{2} f''(\xi).
+\]
+L'errore di troncamento puntuale è:
+\[
+  f'(x_i) - u(x_i) = -\frac{h}{2} f''(\xi).
+\]
+Poiché $\xi$ dipende da $i$ ma $f''$ è limitata, l'errore cresce
+proporzionalmente a $h$ al diminuire del passo:
+\[
+  \text{errore DFA} = \mathcal{O}(h).
+\]
+Diciamo che la DFA è \textbf{del primo ordine} rispetto a $h$.
+
+\subsection{Analisi dell'errore per le DFI}
+
+Per le differenze indietro, sviluppiamo $f(x_{i-1})$ attorno a $x_i$.
+Esiste $\xi \in \,]x_{i-1}, x_i[$ tale che:
+\[
+  f(x_{i-1}) = f(x_i) - h f'(x_i) + h^2 \frac{f''(\xi)}{2}.
+\]
+Sottraiamo da $f(x_i)$ e dividiamo per $h$:
+\[
+  \frac{f(x_i) - f(x_{i-1})}{h} = f'(x_i) - \frac{h}{2} f''(\xi).
+\]
+Quindi $u(x_i) = f'(x_i) - \dfrac{h}{2} f''(\xi)$, da cui:
+\[
+  f'(x_i) - u(x_i) = \frac{h}{2} f''(\xi) = \mathcal{O}(h).
+\]
+Anche le DFI sono del \textbf{primo ordine}.
+La differenza di segno rispetto alle DFA è attesa per simmetria:
+la DFA ``guarda avanti'' e sovrastima sistematicamente, la DFI
+``guarda indietro'' e sottostima sistematicamente (o viceversa,
+a seconda del segno di $f''$).
+
+\subsection{Analisi dell'errore per le DFC}
+
+Per le differenze centrate è necessario spingersi al terzo ordine nello
+sviluppo di Taylor.
+Siano $\xi_i \in \,]x_i, x_{i+1}[$ e $\eta_i \in \,]x_{i-1}, x_i[$:
+\begin{align}
+  f(x_{i+1}) &= f(x_i) + h f'(x_i) + \frac{h^2}{2} f''(x_i)
+               + \frac{h^3}{6} f'''(\xi_i), \tag{1}\\
+  f(x_{i-1}) &= f(x_i) - h f'(x_i) + \frac{h^2}{2} f''(x_i)
+               - \frac{h^3}{6} f'''(\eta_i). \tag{2}
+\end{align}
+Sottraiamo membro a membro $(2)$ da $(1)$:
+\[
+  f(x_{i+1}) - f(x_{i-1}) = 2h f'(x_i) + \frac{h^3}{6}
+  \bigl[f'''(\xi_i) + f'''(\eta_i)\bigr].
+\]
+Dividiamo entrambi i membri per $2h$:
+\[
+  \frac{f(x_{i+1}) - f(x_{i-1})}{2h}
+  = f'(x_i) + \frac{h^2}{12}\bigl[f'''(\xi_i) + f'''(\eta_i)\bigr].
+\]
+Il membro sinistro è $u(x_i)$ (DFC), quindi:
+\[
+  f'(x_i) - u(x_i)
+  = -\frac{h^2}{12}\bigl[f'''(\xi_i) + f'''(\eta_i)\bigr]
+  = \mathcal{O}(h^2).
+\]
+Le DFC sono \textbf{del secondo ordine} rispetto a $h$: a parità di passo,
+l'errore è molto più piccolo di quello ottenuto con DFA o DFI.
+Intuitivamente, la cancellazione dei termini di ordine pari nello sviluppo
+di Taylor (che avviene proprio grazie alla simmetria attorno a $x_i$) è
+la ragione del miglioramento.
+
+\subsection{Approssimazione nei nodi estremi tramite interpolazione}
+
+Le DFC non sono utilizzabili in $x_0$ e $x_n$ perché richiedono un nodo
+sia a sinistra sia a destra.
+Per mantenere l'accuratezza del secondo ordine anche agli estremi, si ricorre
+al \textbf{polinomio di interpolazione di grado 2} costruito sui tre nodi più
+vicini all'estremo di interesse.
+
+\subsubsection{Formula per il primo nodo \texorpdfstring{$x_0$}{x0}}
+
+Costruiamo il polinomio interpolante nei nodi $\{x_0, x_1, x_2\}$
+nella forma di Newton alle differenze divise:
+\[
+  P_2(x)
+  = f(x_0)
+  + (x - x_0)\,f[x_0, x_1]
+  + (x - x_0)(x - x_1)\,f[x_0, x_1, x_2].
+\]
+Espandendo il termine quadratico:
+$(x-x_0)(x-x_1) = x^2 - x_0 x - x_1 x + x_0 x_1$,
+la derivata risulta:
+\[
+  P_2'(x) = f[x_0, x_1] + (2x - x_1 - x_0)\,f[x_0, x_1, x_2].
+\]
+Valutiamo in $x = x_0$ e ricordiamo che i nodi sono equidistanti di passo $h$,
+quindi $x_0 - x_1 = -h$:
+\[
+  P_2'(x_0)
+  = f[x_0, x_1] + (x_0 - x_1)\,f[x_0, x_1, x_2]
+  = f[x_0, x_1] + (-h)\,f[x_0, x_1, x_2].
+\]
+Sostituiamo la differenza divisa di secondo ordine e quella di primo ordine
+con le definizioni esplicite ($x_2 - x_0 = 2h$):
+\[
+  P_2'(x_0)
+  = f[x_0, x_1] + (-h)\,\frac{f[x_1, x_2] - f[x_0, x_1]}{x_2 - x_0}
+  = f[x_0, x_1] - h\,\frac{f[x_1, x_2] - f[x_0, x_1]}{2h}.
+\]
+Sviluppando la frazione:
+\[
+  P_2'(x_0)
+  = f[x_0, x_1] - \frac{f[x_1, x_2]}{2} + \frac{f[x_0, x_1]}{2}
+  = \frac{3 f[x_0, x_1] - f[x_1, x_2]}{2}.
+\]
+Sostituendo le differenze divise di primo ordine con i valori nodali
+($f[x_k, x_{k+1}] = (f(x_{k+1}) - f(x_k))/h$):
+\begin{align*}
+  P_2'(x_0)
+  &= \frac{1}{2}\left[3\,\frac{f(x_1)-f(x_0)}{h} - \frac{f(x_2)-f(x_1)}{h}\right]\\
+  &= \frac{3(f(x_1)-f(x_0)) - (f(x_2)-f(x_1))}{2h}\\
+  &= \frac{-3f(x_0) + 4f(x_1) - f(x_2)}{2h}.
+\end{align*}
+In definitiva:
+\[
+  \boxed{P_2'(x_0) = \frac{-3f(x_0) + 4f(x_1) - f(x_2)}{2h}}.
+\]
+
+\subsubsection{Formula per l'ultimo nodo \texorpdfstring{$x_n$}{xn}}
+
+In maniera del tutto analoga, costruiamo il polinomio interpolante
+nei nodi $\{x_{n-2}, x_{n-1}, x_n\}$:
+\[
+  P_2(x)
+  = f(x_{n-2})
+  + (x - x_{n-2})\,f[x_{n-2}, x_{n-1}]
+  + (x - x_{n-2})(x - x_{n-1})\,f[x_{n-2}, x_{n-1}, x_n].
+\]
+La derivata è:
+\[
+  P_2'(x) = f[x_{n-2}, x_{n-1}] + (2x - x_{n-2} - x_{n-1})\,f[x_{n-2}, x_{n-1}, x_n].
+\]
+Valutiamo in $x = x_n$.
+Poiché i nodi sono equidistanti:
+$x_n - x_{n-2} = 2h$ e $x_n - x_{n-1} = h$, quindi
+$2x_n - x_{n-2} - x_{n-1} = (x_n - x_{n-2}) + (x_n - x_{n-1}) = 3h$:
+\[
+  P_2'(x_n)
+  = f[x_{n-2}, x_{n-1}] + 3h\,f[x_{n-2}, x_{n-1}, x_n].
+\]
+Sostituiamo la differenza divisa di secondo ordine:
+\[
+  P_2'(x_n)
+  = f[x_{n-2}, x_{n-1}]
+  + 3h\,\frac{f[x_{n-1}, x_n] - f[x_{n-2}, x_{n-1}]}{2h}
+  = f[x_{n-2}, x_{n-1}]
+  + \frac{3}{2}\bigl(f[x_{n-1}, x_n] - f[x_{n-2}, x_{n-1}]\bigr).
+\]
+Raccogliamo:
+\[
+  P_2'(x_n)
+  = \frac{2 f[x_{n-2}, x_{n-1}] + 3 f[x_{n-1}, x_n] - 3 f[x_{n-2}, x_{n-1}]}{2}
+  = \frac{3 f[x_{n-1}, x_n] - f[x_{n-2}, x_{n-1}]}{2}.
+\]
+Sostituendo le differenze divise di primo ordine:
+\begin{align*}
+  P_2'(x_n)
+  &= \frac{1}{2}\left[3\,\frac{f(x_n)-f(x_{n-1})}{h}
+     - \frac{f(x_{n-1})-f(x_{n-2})}{h}\right]\\
+  &= \frac{3(f(x_n)-f(x_{n-1})) - (f(x_{n-1})-f(x_{n-2}))}{2h}\\
+  &= \frac{3f(x_n) - 4f(x_{n-1}) + f(x_{n-2})}{2h}.
+\end{align*}
+In definitiva:
+\[
+  \boxed{P_2'(x_n) = \frac{3f(x_n) - 4f(x_{n-1}) + f(x_{n-2})}{2h}}.
+\]
+Anche queste due formule agli estremi hanno accuratezza $\mathcal{O}(h^2)$,
+in accordo con l'ordine delle DFC usate nei nodi interni.
+
+\begin{osservazione}[Riepilogo degli ordini di accuratezza]
+\begin{center}
+\begin{tabular}{lcc}
+  \hline
+  \textbf{Metodo} & \textbf{Nodi utilizzabili} & \textbf{Ordine} \\
+  \hline
+  DFA & $i = 0, \ldots, n-1$ & $\mathcal{O}(h)$ \\
+  DFI & $i = 1, \ldots, n$   & $\mathcal{O}(h)$ \\
+  DFC & $i = 1, \ldots, n-1$ & $\mathcal{O}(h^2)$ \\
+  Formula a 3 punti per $x_0$    & — & $\mathcal{O}(h^2)$ \\
+  Formula a 3 punti per $x_n$    & — & $\mathcal{O}(h^2)$ \\
+  \hline
+\end{tabular}
+\end{center}
+La strategia ottimale in pratica è dunque: usare le DFC per tutti i nodi
+interni e le formule a tre punti agli estremi, ottenendo così un'approssimazione
+globalmente del secondo ordine.
+\end{osservazione}
+
+\begin{intuizione}
+Il miglioramento da $\mathcal{O}(h)$ a $\mathcal{O}(h^2)$ delle DFC
+non è un caso: è il risultato diretto della \emph{simmetria} dello schema
+attorno al punto $x_i$.
+I termini di derivata di ordine pari ($f''$, $f^{(4)}$, \ldots)
+si cancellano nella sottrazione $f(x_{i+1}) - f(x_{i-1})$, esattamente
+come accade nel metodo dei trapezi (rispetto alla regola del punto medio)
+in integrazione numerica.
+Dimezzare il passo $h$ riduce l'errore DFC di un fattore 4,
+mentre per DFA/DFI il fattore è solo 2.
+\end{intuizione}
+
 \end{document}
