@@ -3070,4 +3070,384 @@ ridotto rispetto al GS puro ($\omega = 1$), permettendo una convergenza
 molto più rapida con lo stesso costo per iterazione.
 \end{intuizione}
 
+
+% ============================================================
+\section{Approssimazione dei minimi quadrati nel continuo}
+% ============================================================
+
+\subsection{Formulazione del problema}
+
+Consideriamo lo spazio delle funzioni reali definite sull'intervallo
+$[a,b]$. Supponiamo di avere $n+1$ funzioni \textbf{linearmente
+indipendenti} (L.I.)
+\[
+  \{\varphi_i(x)\}_{i=0}^{n}
+\]
+e costruiamo la loro \textbf{combinazione lineare}
+\[
+  g_n(x) = \sum_{i=0}^{n} \alpha_i\,\varphi_i(x),
+\]
+dove i coefficienti reali $\alpha_i$ sono le incognite da determinare e
+$\varphi_i(x)$ sono le funzioni base (ad esempio monomi $1,x,x^2,\ldots$,
+oppure polinomi ortogonali di Legendre, di Chebyshev, ecc.).
+
+L'obiettivo è \textbf{trovare i coefficienti $\alpha_i$} tali che
+$g_n(x)$ minimizzi la distanza dalla funzione $f(x)$, misurata
+attraverso la norma euclidea del continuo:
+\[
+  \|f - g_n(x)\|_2.
+\]
+Questa norma è l'analogo continuo della norma euclidea discreta: invece
+di sommare gli scarti al quadrato su un insieme finito di punti, si
+integra il quadrato dello scarto sull'intero intervallo $[a,b]$.
+
+\subsection{Prodotto scalare e norma nello spazio delle funzioni reali}
+
+Per poter parlare di distanza tra funzioni è indispensabile introdurre
+un \textbf{prodotto scalare} nello spazio delle funzioni reali. Esso è
+definito come
+\[
+  \langle f,\, g_n \rangle = \int_a^b f(x)\,g_n(x)\,dx.
+\]
+Questa definizione soddisfa le proprietà di bilinearità, simmetria e
+positività richieste a un prodotto scalare.
+
+La \textbf{norma $2$} indotta da questo prodotto scalare è
+\[
+  \|f\|_2 = \sqrt{\langle f,f \rangle} = \sqrt{\int_a^b f^2(x)\,dx}.
+\]
+Geometricamente, $\|f\|_2$ misura la ``lunghezza'' della funzione $f$
+nello spazio funzionale.
+
+\subsection{La distanza al quadrato da minimizzare}
+
+Avendo definito norma e prodotto scalare, possiamo esprimere la
+\textbf{distanza al quadrato} tra $f$ e $g_n$:
+\[
+  \varepsilon^2(\alpha_0,\alpha_1,\ldots,\alpha_n)
+  = \|f - g_n\|_2^2
+  = \langle f - g_n,\, f - g_n \rangle
+  = \int_a^b \bigl[f(x) - g_n(x)\bigr]^2\,dx.
+\]
+Sostituendo esplicitamente la definizione di $g_n(x)$:
+\[
+  \varepsilon^2(\alpha_0,\ldots,\alpha_n)
+  = \int_a^b \left\{f(x) - \sum_{i=0}^{n}\alpha_i\,\varphi_i(x)\right\}^2 dx.
+\]
+Questa è una funzione quadratica nei coefficienti $\alpha_i$, pertanto
+è \textbf{convessa} e ammette un unico minimo globale.
+
+\subsection{Norma pesata e spazio $\mathcal{L}^2$}
+
+In molte applicazioni è conveniente pesare diversamente le varie zone
+dell'intervallo $[a,b]$. Si introduce allora il concetto di
+\textbf{norma$_2$ pesata}, a partire da una ridefinizione del prodotto
+scalare con una funzione peso $\omega(x)$. Tale funzione è:
+\begin{itemize}
+  \item non negativa: $\omega(x) \geq 0$;
+  \item definita su $[a,b]$;
+  \item integrabile su $[a,b]$.
+\end{itemize}
+Il \textbf{prodotto scalare pesato} diventa:
+\[
+  \langle f,\, g_n \rangle_\omega = \int_a^b \omega(x)\,f(x)\,g_n(x)\,dx,
+\]
+e la \textbf{norma pesata} associata è:
+\[
+  \|f\|_{2,\omega} = \sqrt{\langle f,f \rangle_\omega}
+  = \sqrt{\int_a^b \omega(x)\,f^2(x)\,dx}.
+\]
+Per questo tipo di operazioni si lavora nello \textbf{spazio di funzioni
+a quadrato sommabile} $\mathcal{L}^2$: si definiscono funzioni a quadrato
+sommabile le funzioni il cui integrale (nell'intervallo $[a,b]$) del
+modulo quadro si mantiene \textbf{limitato}:
+\[
+  f(x) \in \mathcal{L}^2 \quad\Longrightarrow\quad
+  \int_a^b |f(x)|^2\,dx < \infty.
+\]
+
+\begin{intuizione}
+La funzione peso $\omega(x)$ permette di attribuire importanza
+``localizzata'' a diverse zone dell'intervallo: un peso più grande
+in una certa regione fa sì che l'approssimazione sia più accurata
+proprio lì, a scapito delle zone con peso minore.
+Ad esempio, nei punti di Gauss-Chebyshev si usa $\omega(x)=1/\sqrt{1-x^2}$,
+che concentra i nodi di quadratura agli estremi dell'intervallo per
+compensare le oscillazioni di Runge.
+\end{intuizione}
+
+\subsection{Condizione di minimo: annullamento della derivata}
+
+Come nel caso discreto, per minimizzare $\varepsilon^2$ è necessario
+\textbf{annullare la derivata parziale rispetto a ogni $\alpha_k$}:
+\[
+  \frac{\partial\,\varepsilon^2}{\partial\,\alpha_k} = 0,
+  \qquad k = 0,1,2,\ldots,n.
+\]
+Effettuiamo la derivata sostituendo l'espressione esplicita di
+$\varepsilon^2$:
+\[
+  \frac{\partial}{\partial\,\alpha_k}
+  \int_a^b \left\{f(x) - \sum_{i=0}^{n}\alpha_i\,\varphi_i(x)\right\}^2 dx = 0.
+\]
+Poiché la derivata e l'integrale possono essere scambiati (per funzioni
+regolari), deriviamo sotto segno di integrale applicando la regola della
+catena:
+\[
+  \int_a^b 2\left\{f(x) - \sum_{i=0}^{n}\alpha_i\,\varphi_i(x)\right\}
+  \cdot \bigl(-\varphi_k(x)\bigr)\,dx = 0.
+\]
+Il fattore $2$ è positivo, quindi possiamo semplificarlo. Distribuiamo
+il prodotto con $(-\varphi_k(x))$ e spostiamo il termine con $f(x)$ a
+destra:
+\[
+  \sum_{i=0}^{n}\alpha_i\int_a^b \varphi_i(x)\,\varphi_k(x)\,dx
+  = \int_a^b f(x)\,\varphi_k(x)\,dx.
+\]
+Riconoscendo le definizioni di prodotto scalare, otteniamo il
+\textbf{sistema lineare} (analogo del sistema normale del caso discreto):
+\[
+  \boxed{B\,\boldsymbol{\alpha} = \mathbf{c}}
+\]
+con elementi:
+\[
+  \begin{cases}
+    b_{ki} = \displaystyle\int_a^b \varphi_i(x)\,\varphi_k(x)\,dx
+            = \langle \varphi_i,\,\varphi_k \rangle, \\[8pt]
+    c_k    = \displaystyle\int_a^b f(x)\,\varphi_k(x)\,dx
+            = \langle f,\,\varphi_k \rangle.
+  \end{cases}
+\]
+Qui $b_{ki}$ è l'elemento $(k,i)$ della matrice $B$ (spesso chiamata
+\emph{matrice di Gram}) e $c_k$ è il $k$-esimo elemento del termine
+noto $\mathbf{c}$.
+
+\subsection{Caso ortogonale: coefficienti di Fourier}
+
+Per la risoluzione del sistema $B\boldsymbol{\alpha}=\mathbf{c}$, può
+essere molto conveniente scegliere un \textbf{insieme di funzioni
+ortogonali}: due funzioni $\varphi_i$ e $\varphi_k$ si dicono ortogonali
+se
+\[
+  \langle \varphi_i,\,\varphi_k \rangle = 0 \quad \text{per } i \neq k.
+\]
+In questo caso la matrice $B$ è \textbf{diagonale}, poiché tutti gli
+elementi fuori diagonale si annullano. Il sistema si decompone allora
+in $n+1$ equazioni scalari indipendenti:
+\[
+  \langle \varphi_k,\,\varphi_k \rangle\,\alpha_k
+  = \langle f,\,\varphi_k \rangle
+  \quad\Longrightarrow\quad
+  \alpha_k = \frac{\langle f,\,\varphi_k \rangle}{\langle \varphi_k,\,\varphi_k \rangle},
+  \qquad k = 0,1,\ldots,n.
+\]
+Tali coefficienti prendono il nome di \textbf{coefficienti di Fourier}.
+
+\begin{osservazione}[Intuizione geometrica]
+La formula $\alpha_k = \langle f,\varphi_k\rangle / \langle\varphi_k,\varphi_k\rangle$
+è l'esatto analogo della proiezione di un vettore su un asse di una base
+ortonormale nello spazio euclideo. Ogni coefficiente di Fourier
+``proietta'' la funzione $f$ lungo la direzione $\varphi_k$, misurando
+quanto $f$ ``assomiglia'' a $\varphi_k$. Se le basi fossero ortonormali
+($\langle\varphi_k,\varphi_k\rangle = 1$), il denominatore sarebbe $1$
+e la formula diventerebbe ancor più trasparente.
+\end{osservazione}
+
+% ============================================================
+\section{Operatori alle differenze divise}
+% ============================================================
+
+\subsection{Motivazione e definizione}
+
+Le \textbf{differenze divise} rappresentano un passo avanti rispetto ai
+polinomi di Lagrange: nel momento in cui viene aggiunto un nuovo nodo
+al set di dati, non è necessario ricalcolare l'intero polinomio da capo,
+ma è sufficiente aggiungere il calcolo di un singolo nuovo termine.
+Questo le rende particolarmente efficienti in contesti in cui i dati
+arrivano progressivamente.
+
+Dati $n+1$ nodi distinti $x_0, x_1, \ldots, x_n$, si introduce
+l'\textbf{operatore alle differenze divise} definito ricorsivamente come:
+\[
+  f[x_0, x_1, \ldots, x_n]
+  = \frac{f[x_1, \ldots, x_n] - f[x_0, x_1, \ldots, x_{n-1}]}{x_n - x_0}.
+\]
+Questa è la differenza divisa di ordine $n$: è definita come la differenza
+tra la differenza divisa di ordine $n-1$ calcolata sugli ultimi $n$ nodi
+e quella calcolata sui primi $n$ nodi, il tutto diviso per la differenza
+tra il nodo più a destra e quello più a sinistra.
+
+Al \textbf{caso base} (ordine $0$) la differenza divisa coincide con il
+valore della funzione nel nodo:
+\[
+  f[x_i] = f(x_i).
+\]
+
+\subsection{Struttura per ordini}
+
+Per capire come cresce la complessità, analizziamo caso per caso:
+\begin{itemize}
+  \item \textbf{Ordine 1}: usa $n+1 = 2$ nodi per ciascun operatore;
+    si calcola per ogni coppia di nodi \emph{adiacenti}
+    $(x_0, x_1),\,(x_1,x_2),\ldots,(x_{n-1},x_n)$. La formula esplicita
+    è semplicemente il rapporto incrementale:
+    \[
+      f[x_i, x_{i+1}] = \frac{f(x_{i+1}) - f(x_i)}{x_{i+1} - x_i}.
+    \]
+  \item \textbf{Ordine 2}: usa $n+1 = 3$ nodi per ciascun operatore;
+    si calcola per ogni \emph{tripla} di nodi adiacenti
+    $(x_0,x_1,x_2),\,(x_1,x_2,x_3),\ldots$
+    \[
+      f[x_i,x_{i+1},x_{i+2}]
+      = \frac{f[x_{i+1},x_{i+2}] - f[x_i,x_{i+1}]}{x_{i+2}-x_i}.
+    \]
+\end{itemize}
+
+\begin{osservazione}
+Ad ogni passaggio da un ordine al successivo si ottiene
+\textbf{un operatore in meno}: se si parte con $n+1$ valori di funzione,
+al primo ordine si hanno $n$ differenze, al secondo $n-1$, e così via
+fino all'unica differenza divisa di ordine massimo $n$.
+\end{osservazione}
+
+\subsection{Tabella delle differenze divise}
+
+Il procedimento si organizza in una tabella triangolare inferiore, in
+cui ogni riga corrisponde a un nodo e ogni colonna a un ordine crescente
+di differenza divisa. Dopo aver calcolato tutti gli operatori necessari,
+si ottiene una struttura del tipo:
+
+\[
+\begin{pmatrix}
+f[x_0,x_1]       & 0                   & 0                       & \cdots & 0 \\
+f[x_1,x_2]       & f[x_0,x_1,x_2]      & 0                       & \cdots & 0 \\
+f[x_2,x_3]       & f[x_1,x_2,x_3]      & f[x_0,x_1,x_2,x_3]      & \cdots & 0 \\
+\vdots            & \vdots              & \vdots                  & \ddots & \vdots \\
+f[x_{n-1},x_n]   & f[x_{n-2},x_{n-1},x_n] & f[x_{n-3},x_{n-2},x_{n-1},x_n] & \cdots & f[x_0,x_1,\ldots,x_n]
+\end{pmatrix}
+\]
+
+La diagonale finale (colonna più a destra) fornisce i coefficienti del
+\textbf{polinomio interpolante di Newton alle differenze divise}:
+\[
+  P_n(x) = f[x_0]
+  + \sum_{k=1}^{n} f[x_0,x_1,\ldots,x_k]
+    \prod_{j=0}^{k-1}(x - x_j).
+\]
+
+\begin{intuizione}
+Il vantaggio computazionale è evidente: se si aggiunge un nuovo nodo
+$x_{n+1}$, basta calcolare una nuova colonna della tabella (che richiede
+$n+1$ operazioni) e aggiungere un solo termine alla somma del polinomio.
+Con Lagrange, invece, si dovrebbe ricostruire da zero tutti gli $n+2$
+polinomi base.
+\end{intuizione}
+
+% ============================================================
+\section{Polinomio di Hermite}
+% ============================================================
+
+\subsection{Setup del problema}
+
+Il \textbf{polinomio di Hermite} entra in gioco nel momento in cui, per
+ogni nodo, si conosce non solo il valore della funzione ma anche quello
+della \textbf{derivata prima}. I dati disponibili sono quindi:
+\[
+  \text{(funzione):}\quad
+  (x_0,\,f(x_0)),\;(x_1,\,f(x_1)),\;\cdots,\;(x_n,\,f(x_n)),
+\]
+\[
+  \text{(derivata prima):}\quad
+  (x_0,\,f'(x_0)),\;(x_1,\,f'(x_1)),\;\cdots,\;(x_n,\,f'(x_n)).
+\]
+
+Avendo $n+1$ nodi e conoscendo sia la funzione che la derivata in
+ciascuno, disponiamo complessivamente di \textbf{$2(n+1) = 2n+2$
+condizioni di interpolazione}:
+\[
+  \begin{cases}
+    P(x_i) = f(x_i),   & i = 0,1,\ldots,n, \\
+    P'(x_i) = f'(x_i), & i = 0,1,\ldots,n.
+  \end{cases}
+\]
+Queste $2n+2$ condizioni determinano univocamente un polinomio di grado
+al più $2n+1$, che viene definito \textbf{polinomio di Hermite}.
+
+\subsection{Costruzione tramite differenze divise con nodi ripetuti}
+
+L'idea elegante è di ricondurre il polinomio di Hermite al formalismo
+delle differenze divise, introducendo \textbf{nodi ripetuti}: ogni nodo
+$x_i$ viene inserito \emph{due volte} nella tabella. Si definisce
+allora la differenza divisa con nodi coincidenti come il limite:
+\[
+  f[x_i, x_i] = \lim_{x \to x_i} \frac{f[x] - f[x_i]}{x - x_i} = f'(x_i).
+\]
+In altri termini, la differenza divisa del primo ordine con due nodi
+uguali coincide con la derivata prima in quel punto.
+
+La tabella delle differenze divise per il caso con $n=2$ (tre nodi
+$x_0, x_1, x_2$, ciascuno ripetuto due volte, per un totale di $6$
+nodi nella sequenza $x_0,x_0,x_1,x_1,x_2,x_2$) si costruisce come
+segue. I valori al primo ordine sulla diagonale marcata $\equiv f'(x_i)$
+vengono direttamente sostituiti con la derivata nota:
+
+\medskip
+\begin{center}
+\begin{tabular}{c|c|cccc}
+Nodo & $f[\cdot]$ & ord.1 & ord.2 & ord.3 & ord.4 \\
+\hline
+$x_0$ & $f(x_0)$ & & & & \\
+$x_0$ & $f(x_0)$ & $f'(x_0)$ & & & \\
+$x_1$ & $f(x_1)$ & $f[x_0,x_1]$ & $f[x_0,x_0,x_1]$ & & \\
+$x_1$ & $f(x_1)$ & $f'(x_1)$ & $f[x_0,x_1,x_1]$ & $f[x_0,x_0,x_1,x_1]$ & \\
+$x_2$ & $f(x_2)$ & $f[x_1,x_2]$ & $f[x_1,x_1,x_2]$ & $f[x_0,x_1,x_1,x_2]$ & $f[x_0,x_0,x_1,x_1,x_2]$ \\
+$x_2$ & $f(x_2)$ & $f'(x_2)$ & $f[x_1,x_2,x_2]$ & $f[x_1,x_1,x_2,x_2]$ & $f[x_0,x_1,x_1,x_2,x_2]$
+\end{tabular}
+\end{center}
+\medskip
+
+\noindent dove, ad esempio:
+\[
+  f[x_0,x_0,x_1]
+  = \frac{f[x_0,x_1] - f[x_0,x_0]}{x_1 - x_0}
+  = \frac{f[x_0,x_1] - f'(x_0)}{x_1 - x_0}.
+\]
+
+\subsection{Formula del polinomio di Hermite}
+
+Il polinomio di Hermite si scrive nella forma di Newton, usando i
+coefficienti ricavati dalla tabella delle differenze divise (con i nodi
+nella sequenza ripetuta). Per il caso $n=2$ (polinomio di grado $5$):
+\begin{align*}
+  P_5(x) =\;& f(x_0) \\
+  &+ (x-x_0)\,f[x_0,x_0] \\
+  &+ (x-x_0)^2\,f[x_0,x_0,x_1] \\
+  &+ (x-x_0)^2(x-x_1)\,f[x_0,x_0,x_1,x_1] \\
+  &+ (x-x_0)^2(x-x_1)^2\,f[x_0,x_0,x_1,x_1,x_2] \\
+  &+ (x-x_0)^2(x-x_1)^2(x-x_2)\,f[x_0,x_0,x_1,x_1,x_2,x_2].
+\end{align*}
+Si noti che il termine $(x-x_0)$ compare \emph{elevato al quadrato}
+a partire dal terzo addendo, perché il nodo $x_0$ appare due volte nella
+sequenza; analogamente per $x_1$. Questo è precisamente il meccanismo
+che garantisce il rispetto anche delle condizioni sulla derivata.
+
+\begin{osservazione}[Verifica delle condizioni]
+Si può verificare che $P_5(x_0) = f(x_0)$ (il primo termine vale
+$f(x_0)$ e tutti gli altri si annullano perché contengono $(x-x_0)$),
+e che $P_5'(x_0) = f'(x_0)$ (derivando, l'unico termine che sopravvive
+in $x_0$ è quello con $f[x_0,x_0] = f'(x_0)$). Lo stesso vale negli
+altri nodi.
+\end{osservazione}
+
+\begin{intuizione}
+Il polinomio di Hermite è la generalizzazione naturale dell'interpolazione
+di Lagrange al caso in cui si conoscono anche le derivate. Dal punto di
+vista geometrico, mentre Lagrange impone solo che il polinomio
+\emph{passi} per i punti dati, Hermite impone anche che
+\emph{abbia la stessa tangente} in quei punti. Il risultato è un
+polinomio più ``fedele'' al comportamento locale di $f$, con oscillazioni
+tipicamente più controllate.
+\end{intuizione}
+
 \end{document}
+
