@@ -3449,5 +3449,241 @@ polinomio più ``fedele'' al comportamento locale di $f$, con oscillazioni
 tipicamente più controllate.
 \end{intuizione}
 
+% ============================================================
+\section{Fattorizzazione di Cholesky}
+% ============================================================
+
+La \textbf{fattorizzazione di Cholesky} è utilizzata per risolvere sistemi lineari in cui la matrice $A$ dei
+coefficienti è \textbf{simmetrica} e \textbf{definita positiva} (in modo tale che le radici diagonali
+della matrice $L$ risultino reali e positive).
+
+\subsection{Definizioni preliminari}
+
+\begin{itemize}
+  \item Una matrice è \textbf{simmetrica} se $A = A^T$.
+  \item Una matrice è \textbf{definita positiva} se
+  \[
+    \forall\,\mathbf{x} \in \mathbb{R}^n,\quad \mathbf{x} \neq \mathbf{0}
+    \;\Longrightarrow\; \mathbf{x}^T A\,\mathbf{x} > 0.
+  \]
+  In altri termini, la forma quadratica associata ad $A$ è strettamente positiva per ogni vettore non
+  nullo: la matrice non può "collassare" o "ribaltare" nessuna direzione dello spazio.
+\end{itemize}
+
+\begin{teorema}[Criterio di Sylvester]
+Una matrice $A$ è definita positiva se e solo se tutti i \textbf{minori principali di testa} sono
+strettamente positivi:
+\[
+  \det(A_k) > 0 \quad \forall\, k = 1, 2, \ldots, n,
+\]
+dove $A_k$ è la \emph{sottomatrice principale} di ordine $k$, ottenuta selezionando le prime $k$ righe
+e le prime $k$ colonne di $A$.
+\end{teorema}
+
+\noindent Il criterio di Sylvester fornisce un test pratico per verificare la definita positività senza
+dover calcolare gli autovalori di $A$ (che sarebbero tutti positivi in caso di matrice definita
+positiva).
+
+\subsection{La fattorizzazione}
+
+Per ogni matrice $A$ simmetrica e definita positiva, esiste un'unica matrice triangolare inferiore $L$
+con elementi diagonali strettamente positivi tale che:
+\[
+  A = L L^T.
+\]
+Qui:
+\begin{itemize}
+  \item $L$ è la matrice \textbf{triangolare inferiore} (LOWER), con entrate non nulle solo nella
+    parte sotto la diagonale (inclusa),
+  \item $L^T$ è la sua trasposta, quindi \textbf{triangolare superiore} (UPPER).
+\end{itemize}
+A differenza della fattorizzazione LU generica (dove $L$ e $U$ sono due matrici distinte), Cholesky
+sfrutta la simmetria: basta calcolare e memorizzare $L$, poiché $U = L^T$ è automaticamente nota.
+
+\subsection{Costo computazionale}
+
+Il costo computazionale della fattorizzazione di Cholesky è:
+\[
+  O\!\left(\frac{n^3}{6}\right).
+\]
+Questo è esattamente la \textbf{metà} del costo della fattorizzazione LU generica, che è
+$O(n^3/3)$. Il risparmio deriva direttamente dall'ipotesi di simmetria: si calcolano solo gli
+elementi del triangolo inferiore di $L$, saltando il triangolo superiore (che si ottiene per
+trasposizione senza ulteriori operazioni).
+
+\begin{intuizione}
+Geometricamente, richiedere $A$ definita positiva significa che la trasformazione lineare associata
+ad $A$ non ribalta né appiattisce mai lo spazio: ogni vettore $\mathbf{x}$ soddisfa
+$\mathbf{x}^T A \mathbf{x} > 0$. La fattorizzazione $A = LL^T$ scompone questa trasformazione in
+"mezza trasformazione" $L$ applicata due volte (come $L$ e come $L^T$), il che è possibile proprio
+grazie alla simmetria. In pratica, risolvere $Ax = b$ con Cholesky significa risolvere in sequenza
+$Ly = b$ (avanzamento) e $L^T x = y$ (retrosoluzione), con costo complessivo $O(n^2)$ una volta
+nota $L$.
+\end{intuizione}
+
+% ============================================================
+\section{Fattorizzazione LU tramite Gauss}
+% ============================================================
+
+La \textbf{fattorizzazione LU} è un metodo diretto che trasforma la matrice di partenza $A$ in una
+matrice equivalente della forma $A = LU$. In particolare:
+\begin{itemize}
+  \item $L$ è la matrice \textbf{LOWER} (triangolare inferiore, con 1 sulla diagonale),
+  \item $U$ è la matrice \textbf{UPPER} (triangolare superiore).
+\end{itemize}
+Sia la fattorizzazione LU sia il Metodo di Eliminazione di Gauss (MEG) hanno lo stesso costo
+computazionale:
+\[
+  O\!\left(\frac{n^3}{3}\right).
+\]
+
+\subsection{Matrici elementari di Gauss}
+
+La matrice $U$ della fattorizzazione LU non è altro che la matrice $A$ ridotta tramite il MEG.
+Per evidenziare il legame preciso tra i due metodi, introduciamo le \textbf{matrici elementari
+di Gauss}: matrici del tipo $I + A$, con $\mathrm{rg}(A)=1$, ovvero in cui tutte le righe (o
+colonne) sono multiple di una singola riga (o colonna).
+
+Una matrice di rango 1 può sempre essere scritta come \textbf{prodotto esterno} (outer product) di
+due vettori:
+\[
+  A = \mathbf{u}\,\mathbf{v}^T
+  = \begin{pmatrix} u_1 \\ u_2 \\ \vdots \\ u_n \end{pmatrix}
+    \begin{pmatrix} v_1 & v_2 & \cdots & v_n \end{pmatrix}
+  = \begin{pmatrix}
+      u_1 v_1 & u_1 v_2 & \cdots & u_1 v_n \\
+      u_2 v_1 & u_2 v_2 & \cdots & u_2 v_n \\
+      \vdots  & \vdots  & \ddots & \vdots  \\
+      u_n v_1 & u_n v_2 & \cdots & u_n v_n
+    \end{pmatrix}.
+\]
+Ogni riga è un multiplo di $\mathbf{v}^T$ (tramite il coefficiente $u_i$), confermando che il rango
+è 1 se $\mathbf{u},\mathbf{v}\neq\mathbf{0}$.
+
+Possiamo quindi scrivere una \textbf{matrice elementare di Gauss} $E$ come:
+\[
+  E(\alpha, \mathbf{u}, \mathbf{v}) = I + \alpha\,\mathbf{u}\,\mathbf{v}^T,
+\]
+dove $\alpha \in \mathbb{C}$ è un coefficiente scalare e $\mathbf{u},\mathbf{v}$ sono vettori non
+nulli. Premoltiplicare $A$ per $E$ ha l'effetto di sommare a ogni riga una combinazione lineare
+scalata da $\alpha$, che è esattamente l'operazione elementare del MEG.
+
+\subsection{Costruzione delle matrici di Gauss passo per passo}
+
+Nel MEG si usano i \textbf{moltiplicatori di Gauss} $m_{ik} = a_{ik}^{(k)}/a_{kk}^{(k)}$ per
+annullare gli elementi sotto il pivot $a_{kk}$.  Costruiamo esplicitamente le matrici che eseguono
+questo lavoro.
+
+\medskip
+\noindent\textbf{Passo 1 -- eliminazione della prima colonna.}
+Per azzerare $a_{21}$ (elemento in riga 2, colonna 1), definiamo:
+\[
+  M_{21} = I + (-m_{21})\,\mathbf{e}_2\,\mathbf{e}_1^T,
+\]
+dove $m_{21} = a_{21}/a_{11}$ e $\mathbf{e}_i$ è l'$i$-esimo vettore della base canonica.
+Esplicitamente, per $n=3$:
+\[
+  M_{21}
+  = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}
+  + \begin{pmatrix} 0 & 0 & 0 \\ -m_{21} & 0 & 0 \\ 0 & 0 & 0 \end{pmatrix}
+  = \begin{pmatrix} 1 & 0 & 0 \\ -m_{21} & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}.
+\]
+Premoltiplicando $A$ per $M_{21}$, la riga 2 diventa: riga~2 $- m_{21}\cdot$riga~1, che azzera
+$a_{21}$, lasciando invariate le righe 1 e 3.
+
+Ripetendo il procedimento per tutti gli elementi sotto il pivot $a_{11}$ e raccogliendoli in una
+sola matrice si ottiene:
+\[
+  M_1 = I + \sum_{i=2}^{n} (-m_{i1})\,\mathbf{e}_i\,\mathbf{e}_1^T
+      = \begin{pmatrix} 1 & 0 & 0 \\ -m_{21} & 1 & 0 \\ -m_{31} & 0 & 1 \end{pmatrix}
+        \quad\text{(per }n=3\text{)}.
+\]
+Verifichiamo il risultato:
+\[
+  M_1 A
+  = \begin{pmatrix} 1 & 0 & 0 \\ -m_{21} & 1 & 0 \\ -m_{31} & 0 & 1 \end{pmatrix}
+    \begin{pmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{pmatrix}
+  = \begin{pmatrix} a_{11} & a_{12} & a_{13} \\ 0 & \tilde{a}_{22} & \tilde{a}_{23} \\ 0 & \tilde{a}_{32} & \tilde{a}_{33} \end{pmatrix},
+\]
+dove $\tilde{a}_{ij} = a_{ij} - m_{i1}\,a_{1j}$ denota i valori aggiornati.  L'intera prima
+colonna sotto il pivot è stata azzerata in un solo prodotto matriciale.
+
+\medskip
+\noindent\textbf{Passo $k$-esimo generalizzato.}
+Al passo $k$ si costruisce:
+\[
+  M_k = \begin{pmatrix}
+    1           &        &   &            &        &   \\
+                & \ddots &   &            &        &   \\
+                &        & 1 &            &        &   \\
+                &        & -m_{k+1,k} & 1 &      &   \\
+                &        & \vdots     &   & \ddots &   \\
+                &        & -m_{n,k}   &   &        & 1
+  \end{pmatrix},
+\]
+ovvero la matrice identità con i moltiplicatori $-m_{ik}$ (per $i=k+1,\ldots,n$) posizionati nella
+colonna $k$ sotto la diagonale.
+
+\begin{osservazione}[Ordine di calcolo]
+È fondamentale osservare che \textbf{i moltiplicatori del passo $k$ dipendono dalla matrice
+aggiornata $A^{(k)}$}, non dalla matrice originale. Di conseguenza, prima di poter calcolare $M_2$
+occorre costruire $A^{(2)} = M_1 A^{(1)}$; prima di $M_3$ occorre $A^{(3)} = M_2 A^{(2)}$, e così
+via. Il calcolo è quindi strettamente sequenziale.
+\end{osservazione}
+
+\subsection{Il MEG in forma matriciale e derivazione della fattorizzazione LU}
+
+Riscriviamo il MEG in forma matriciale, indicando con $A^{(1)} = A$ la matrice originale e con
+$A^{(k+1)} = M_k A^{(k)}$ la matrice prodotta al passo $k$:
+\begin{align*}
+  A^{(2)} &= M_1\,A^{(1)}, \\
+  A^{(3)} &= M_2\,A^{(2)} = M_2\!\left(M_1\,A^{(1)}\right), \\
+  &\;\;\vdots
+\end{align*}
+Arrivati all'ultimo passo $k = n-1$, la matrice è completamente ridotta a forma triangolare
+superiore:
+\begin{align*}
+  A^{(n)} &= M_{n-1}\,A^{(n-1)} \\
+           &= M_{n-1}\!\left(M_{n-2}\,A^{(n-2)}\right) \\
+           &= M_{n-1}\!\left(M_{n-2}\!\left(M_{n-3}\,A^{(n-3)}\right)\right) \\
+           &= \cdots \\
+           &= M_{n-1}\,M_{n-2}\,M_{n-3}\cdots M_1\,A^{(1)} \;=\; U.
+\end{align*}
+
+Dalla relazione $M_{n-1}M_{n-2}\cdots M_1\,A = U$ si deduce immediatamente che:
+\[
+  A = \bigl(M_{n-1}M_{n-2}\cdots M_1\bigr)^{-1} U = LU,
+\]
+dove la matrice triangolare inferiore $L$ è definita da:
+\[
+  L = \bigl(M_{n-1}M_{n-2}\cdots M_1\bigr)^{-1}
+    = M_{n-1}^{-1}\,M_{n-2}^{-1}\,M_{n-3}^{-1}\cdots M_1^{-1}
+    = \prod_{k=1}^{n-1} M_k^{-1}.
+\]
+
+Il prodotto $\prod_{k=1}^{n-1} M_k^{-1}$ va inteso nell'ordine
+$M_1^{-1} M_2^{-1} \cdots M_{n-1}^{-1}$
+(inversione dell'ordine rispetto al prodotto $M_{n-1}\cdots M_1$ che compare nella relazione
+precedente).
+
+\begin{osservazione}[Invertibilità delle matrici di Gauss]
+Ogni $M_k$ è facilmente invertibile: $M_k^{-1}$ ha la stessa struttura di $M_k$, ma con i segni
+dei moltiplicatori cambiati, ovvero $+m_{ik}$ al posto di $-m_{ik}$. Questo significa che
+costruire $L$ non richiede nessun calcolo aggiuntivo rispetto al MEG: si tratta semplicemente di
+raccogliere tutti i moltiplicatori $m_{ik}$ già calcolati durante l'eliminazione e di disporli nelle
+posizioni corrispondenti del triangolo inferiore di $L$.
+\end{osservazione}
+
+\begin{intuizione}
+Il risultato $A = LU$ afferma che qualunque matrice (non singolare, e senza necessità di pivoting)
+può essere scomposta in un operatore di eliminazione in avanti ($L$) e in un operatore di
+retrosoluzione ($U$). In pratica, eseguire la fattorizzazione LU \emph{equivale} a eseguire il MEG
+e salvare i moltiplicatori: il costo è identico, $O(n^3/3)$. Il vantaggio della fattorizzazione LU
+rispetto al semplice MEG emerge quando si devono risolvere \emph{più sistemi} $Ax = b_1, b_2,
+\ldots$ con la stessa matrice $A$ ma termine noto diverso: la fattorizzazione si calcola una sola
+volta e si riutilizza, risolvendo ogni volta solo due sistemi triangolari con costo $O(n^2)$.
+\end{intuizione}
+
 \end{document}
+
 
