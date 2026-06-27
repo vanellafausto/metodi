@@ -3684,6 +3684,468 @@ rispetto al semplice MEG emerge quando si devono risolvere \emph{più sistemi} $
 volta e si riutilizza, risolvendo ogni volta solo due sistemi triangolari con costo $O(n^2)$.
 \end{intuizione}
 
+
+% ============================================================
+%  22. Polinomi ortogonali
+% ============================================================
+\section{Polinomi ortogonali}
+
+\subsection{Introduzione}
+
+Nel calcolo dei \textbf{polinomi ortogonali} si individuano quattro famiglie principali:
+\begin{itemize}
+  \item Legendre
+  \item Chebyshev (Čebyšëv)
+  \item Laguerre
+  \item Hermite
+\end{itemize}
+Tutti questi metodi individuano un insieme di polinomi $\{\varphi_k\}_{k=0}^{\infty}$
+che sono \emph{ortogonali} a due a due rispetto a un prodotto interno pesato:
+\[
+  \langle \varphi_i,\, \varphi_j \rangle_\omega
+    = \int_a^b \omega(x)\,\varphi_i(x)\,\varphi_j(x)\,dx = 0
+    \qquad \text{per } i \neq j,
+\]
+dove $\omega(x) > 0$ è la \textbf{funzione peso} caratteristica di ciascuna famiglia.
+La scelta di $\omega$ e dell'intervallo $[a,b]$ distingue le diverse famiglie.
+
+\subsection{Polinomi di Legendre}
+
+\begin{itemize}
+  \item \textbf{Funzione peso:} $\omega(x) = 1$ (peso uniforme, tutti i punti contribuiscono
+        egualmente).
+  \item \textbf{Intervallo:} $[a,b] = [-1, 1]$.
+        Per funzioni definite su un intervallo generico $[\alpha,\beta]$ è sufficiente
+        il cambio di variabile affine
+        $x = \dfrac{2t - (\alpha+\beta)}{\beta - \alpha}$,
+        che mappa $[\alpha,\beta]$ su $[-1,1]$.
+  \item \textbf{Funzioni di base:} si parte da
+        \[
+          \varphi_0(x) = 1, \qquad \varphi_1(x) = x,
+        \]
+        e si costruiscono i successivi tramite la \textbf{relazione di ricorrenza a tre
+        termini} (formula di Bonnet):
+        \begin{equation}
+          \boxed{
+            \varphi_{k+1}(x)
+              = \frac{2k+1}{k+1}\,x\,\varphi_k(x)
+                - \frac{k}{k+1}\,\varphi_{k-1}(x),
+            \qquad k = 1, 2, \ldots
+          }
+        \end{equation}
+\end{itemize}
+
+\begin{derivazione}[Formula di Bonnet]
+Si cerca $\varphi_{k+1}$ nella forma
+$\varphi_{k+1}(x) = x\,\varphi_k(x) - \alpha_k\,\varphi_k(x) - \beta_k\,\varphi_{k-1}(x)$.
+Imponendo $\langle \varphi_{k+1}, \varphi_k \rangle = 0$ si ricava $\alpha_k = 0$
+(simmetria del peso $\omega = 1$), e imponendo
+$\langle \varphi_{k+1}, \varphi_{k-1} \rangle = 0$ si ricava $\beta_k = k/(k+1)$,
+da cui la formula.
+\end{derivazione}
+
+\begin{intuizione}
+I polinomi di Legendre sono il risultato dell'ortogonalizzazione di Gram--Schmidt
+applicata alla base monomiale $\{1, x, x^2, \ldots\}$ rispetto alla norma
+$L^2([-1,1])$ con peso uniforme. Sono la scelta naturale quando non si vuole
+privilegiare nessuna regione dell'intervallo.
+\end{intuizione}
+
+\subsection{Polinomi di Chebyshev}
+
+\begin{itemize}
+  \item \textbf{Funzione peso:} $\displaystyle\omega(x) = \frac{1}{\sqrt{1-x^2}}$
+        (diverge agli estremi, pesando maggiormente le zone vicino a $\pm 1$).
+  \item \textbf{Intervallo:} $[a,b] = [-1, 1]$.
+  \item \textbf{Funzioni di base:}
+        \[
+          \varphi_0(x) = 1, \qquad \varphi_1(x) = x,
+        \]
+        e la relazione di ricorrenza è:
+        \begin{equation}
+          \boxed{
+            \varphi_{k+1}(x) = 2x\,\varphi_k(x) - \varphi_{k-1}(x),
+            \qquad k = 1, 2, \ldots
+          }
+        \end{equation}
+\end{itemize}
+
+\begin{intuizione}
+I polinomi di Chebyshev soddisfano $\varphi_k(\cos\theta) = \cos(k\theta)$: sono
+letteralmente i coseni riscalati sull'intervallo $[-1,1]$. Godono della proprietà
+\emph{min-max}: tra tutti i polinomi monici di grado $n$, hanno la norma uniforme
+minima su $[-1,1]$. Per questo i \emph{nodi di Chebyshev} (zeri di $\varphi_n$)
+minimizzano l'errore di interpolazione e attenuano il fenomeno di Runge.
+\end{intuizione}
+
+\subsection{Polinomi di Laguerre}
+
+\begin{itemize}
+  \item \textbf{Funzione peso:} $\omega(x) = e^{-x}$
+        (decrescente esponenzialmente, garantisce la convergenza degli integrali
+        su $[0, +\infty[$).
+  \item \textbf{Intervallo:} $[a,b] = [0, +\infty[$.
+  \item \textbf{Funzioni di base:}
+        \[
+          \varphi_0(x) = 1, \qquad \varphi_1(x) = -x + 1,
+        \]
+        e la relazione di ricorrenza è:
+        \begin{equation}
+          \boxed{
+            \varphi_{k+1}(x)
+              = \frac{(2k+1-x)\,\varphi_k(x) - k\,\varphi_{k-1}(x)}{k+1},
+            \qquad k = 1, 2, \ldots
+          }
+        \end{equation}
+\end{itemize}
+
+\begin{intuizione}
+Il peso $e^{-x}$ ``smorza'' la crescita dei polinomi per $x \to +\infty$, rendendo
+finito l'integrale $\int_0^{+\infty} e^{-x} p(x)^2\,dx$ per ogni polinomio $p$.
+I polinomi di Laguerre sono ideali per approssimare funzioni definite sulla semiretta
+positiva, come densità di probabilità esponenziali.
+\end{intuizione}
+
+\subsection{Polinomi di Hermite}
+
+\begin{itemize}
+  \item \textbf{Funzione peso:} $\omega(x) = e^{-x^2}$
+        (gaussiana, garantisce la convergenza su tutta la retta reale).
+  \item \textbf{Intervallo:} $[a,b] = (-\infty, +\infty)$.
+  \item \textbf{Funzioni di base:}
+        \[
+          \varphi_0(x) = 1, \qquad \varphi_1(x) = 2x,
+        \]
+        e la relazione di ricorrenza è:
+        \begin{equation}
+          \boxed{
+            \varphi_{k+1}(x) = 2x\,\varphi_k(x) - 2k\,\varphi_{k-1}(x),
+            \qquad k = 1, 2, \ldots
+          }
+        \end{equation}
+\end{itemize}
+
+\begin{intuizione}
+Il peso gaussiano $e^{-x^2}$ è la scelta naturale quando si lavora su tutto
+$\mathbb{R}$ con funzioni a decadimento rapido agli infiniti. I polinomi di Hermite
+compaiono in meccanica quantistica (autofunzioni dell'oscillatore armonico) e nella
+teoria delle probabilità (legata alla distribuzione normale).
+\end{intuizione}
+
+% ============================================================
+%  23. Polinomio trigonometrico e Serie di Fourier
+% ============================================================
+\section{Polinomio trigonometrico e Serie di Fourier}
+
+\subsection{Motivazione e spazio delle funzioni}
+
+Vogliamo approssimare \textbf{funzioni periodiche}. A tale scopo consideriamo
+l'insieme di funzioni:
+\[
+  S = \{1,\; \cos(kx),\; \sin(kx)\}_{k=1}^{\infty}.
+\]
+Si può dimostrare che $S$ è \textbf{completo e ortogonale} in $L^2([0, 2\pi])$:
+ciò significa che, per ogni funzione $f \in L^2([0,2\pi])$ periodica, la combinazione
+lineare degli elementi di $S$ converge a $f$ in norma quadratica
+($\overset{SE}{\longrightarrow}$).
+
+\subsection{Funzione approssimante e coefficienti}
+
+La funzione approssimante $g_n(x)$ è definita come combinazione lineare delle prime
+$2n+1$ funzioni di base:
+\begin{equation}
+  \boxed{
+    g_n(x) = \sum_{k=0}^{2n} \alpha_k\,\varphi_k(x)
+  }
+  \qquad \text{con} \quad
+  \alpha_k = \frac{\langle f, \varphi_k \rangle}{\langle \varphi_k, \varphi_k \rangle}.
+\end{equation}
+La sommatoria arriva a $2n$ (e non a $n$) perché le funzioni di base sono in coppia
+per ogni frequenza $k$: un coseno e un seno.
+
+\subsection{Funzioni di base esplicite}
+
+Ordinando le funzioni di base con indice crescente:
+\[
+  \varphi_0(x) = 1,
+\]
+\[
+  \varphi_1(x) = \cos(x), \quad \varphi_2(x) = \sin(x),
+\]
+\[
+  \vdots
+\]
+\[
+  \varphi_{2n-1}(x) = \cos(nx), \quad \varphi_{2n}(x) = \sin(nx).
+\]
+Si osserva che gli indici \textbf{dispari} corrispondono ai coseni e quelli
+\textbf{pari} ai seni.
+
+\subsection{Calcolo esplicito dei coefficienti}
+
+Il prodotto interno in $L^2([0, 2\pi])$ è
+$\langle f, g \rangle = \int_0^{2\pi} f(x)\,g(x)\,dx$.
+
+\paragraph{Coefficiente $a_0$ (termine costante).}
+\[
+  \alpha_0 = a_0
+    = \frac{\langle f, 1 \rangle}{\langle 1, 1 \rangle}
+    = \frac{\displaystyle\int_0^{2\pi} f(x)\,dx}{\displaystyle\int_0^{2\pi} 1\,dx}
+    = \frac{1}{2\pi}\int_0^{2\pi} f(x)\,dx.
+\]
+
+\paragraph{Coefficienti $b_k$ (seni), per indice $2k$ pari, $k = 1, 2, \ldots$}
+\[
+  \alpha_{2k} = b_k
+    = \frac{\langle f, \sin(kx) \rangle}{\langle \sin(kx), \sin(kx) \rangle}
+    = \frac{\displaystyle\int_0^{2\pi} f(x)\sin(kx)\,dx}{\pi}
+    = \frac{1}{\pi}\int_0^{2\pi} f(x)\sin(kx)\,dx,
+\]
+dove si è usato $\int_0^{2\pi}\sin^2(kx)\,dx = \pi$.
+
+\paragraph{Coefficienti $a_k$ (coseni), per indice $2k-1$ dispari, $k = 1, 2, \ldots$}
+\[
+  \alpha_{2k-1} = a_k
+    = \frac{\langle f, \cos(kx) \rangle}{\langle \cos(kx), \cos(kx) \rangle}
+    = \frac{\displaystyle\int_0^{2\pi} f(x)\cos(kx)\,dx}{\pi}
+    = \frac{1}{\pi}\int_0^{2\pi} f(x)\cos(kx)\,dx,
+\]
+dove si è usato $\int_0^{2\pi}\cos^2(kx)\,dx = \pi$.
+
+\subsection{Forma finale: il Polinomio Trigonometrico}
+
+Raccogliendo i risultati:
+\begin{equation}
+  \boxed{
+    g_n(x) = \frac{a_0}{2} + \sum_{k=1}^{n}\bigl[a_k\cos(kx) + b_k\sin(kx)\bigr]
+  }
+\end{equation}
+Il coefficiente $a_0$ compare diviso per 2 per uniformità con i termini successivi:
+la norma al quadrato di $\varphi_0 = 1$ è $2\pi$, il doppio della norma al quadrato
+dei coseni e seni ($\pi$), quindi si introduce il fattore $1/2$ per compensare.
+
+\begin{osservazione}
+Poiché $L^2([0,2\pi])$ è completo rispetto all'insieme $S$, qualsiasi funzione
+periodica scelta in tale spazio può essere \textbf{rappresentata} in termini del
+polinomio trigonometrico con un numero sufficiente di termini.
+\end{osservazione}
+
+\subsection{Serie di Fourier}
+
+Facendo tendere $n \to \infty$ si ottiene la \textbf{Serie di Fourier} di $f$:
+\begin{equation}
+  \boxed{
+    f(x) = \frac{a_0}{2} + \sum_{k=1}^{\infty}\bigl[a_k\cos(kx) + b_k\sin(kx)\bigr]
+  }
+\end{equation}
+
+\begin{intuizione}
+La serie di Fourier è la ``decomposizione in frequenze'' di $f$: ogni termine
+$a_k\cos(kx) + b_k\sin(kx)$ rappresenta l'oscillazione di frequenza $k$ contenuta
+in $f$. I coefficienti $a_k$ e $b_k$ misurano, rispettivamente, quanto $f$
+``assomigli'' al coseno e al seno di frequenza $k$.
+\end{intuizione}
+
+\subsection{Forma complessa della Serie di Fourier}
+
+Si può riscrivere la serie usando le formule di Eulero:
+\[
+  \cos(kx) = \frac{e^{ikx} + e^{-ikx}}{2}, \qquad
+  \sin(kx) = \frac{e^{ikx} - e^{-ikx}}{2i}.
+\]
+Sostituendo nel generico termine della sommatoria:
+\begin{align*}
+  a_k\cos(kx) + b_k\sin(kx)
+    &= a_k\,\frac{e^{ikx}+e^{-ikx}}{2}
+       + b_k\,\frac{e^{ikx}-e^{-ikx}}{2i} \\
+    &= \frac{a_k}{2}\,e^{ikx}
+       + \frac{a_k}{2}\,e^{-ikx}
+       - i\frac{b_k}{2}\,e^{ikx}
+       + i\frac{b_k}{2}\,e^{-ikx} \\
+    &= \underbrace{\frac{a_k - ib_k}{2}}_{c_k}\,e^{ikx}
+       + \underbrace{\frac{a_k + ib_k}{2}}_{c_{-k}}\,e^{-ikx}.
+\end{align*}
+Definendo i \textbf{coefficienti complessi}
+\[
+  c_k = \frac{a_k - ib_k}{2}, \quad
+  c_{-k} = \frac{a_k + ib_k}{2}, \quad
+  c_0 = \frac{a_0}{2},
+\]
+la serie diventa:
+\begin{equation}
+  \boxed{
+    f(x) = \sum_{k=-\infty}^{+\infty} c_k\,e^{ikx}
+  }
+\end{equation}
+
+\paragraph{Calcolo esplicito di $c_k$.}
+Per $k = 0$:
+\[
+  c_0 = \frac{a_0}{2} = \frac{1}{2\pi}\int_0^{2\pi} f(x)\,dx.
+\]
+Per $k = \pm 1, \pm 2, \ldots$: sfruttando le espressioni integrali di $a_k$ e $b_k$,
+\begin{align*}
+  c_{\pm k}
+    &= \frac{1}{2}\left[
+         \frac{1}{\pi}\int_0^{2\pi}\!f(x)\cos(kx)\,dx
+         \mp \frac{i}{\pi}\int_0^{2\pi}\!f(x)\sin(kx)\,dx
+       \right] \\
+    &= \frac{1}{2\pi}\int_0^{2\pi} f(x)\bigl(\cos(kx) \mp i\sin(kx)\bigr)\,dx
+     = \frac{1}{2\pi}\int_0^{2\pi} f(x)\,e^{\mp ikx}\,dx.
+\end{align*}
+In forma compatta, per ogni $k \in \mathbb{Z}$:
+\[
+  c_k = \frac{1}{2\pi}\int_0^{2\pi} f(x)\,e^{-ikx}\,dx.
+\]
+
+\subsection{Caso con periodo $T$ generico}
+
+Se $f$ è l'estensione periodica di periodo $T$ di una funzione definita su $[0,T]$,
+si sostituisce la pulsazione fondamentale $\omega_0 = 2\pi/T$ e si ottiene:
+\begin{equation}
+  \boxed{
+    f(x) = \sum_{k=-\infty}^{+\infty} c_k\,e^{\,i\frac{2\pi}{T}kx}
+  }
+\end{equation}
+con coefficienti:
+\begin{equation}
+  \boxed{
+    c_k = \frac{1}{T}\int_0^{T} f(x)\,e^{-i\frac{2\pi}{T}kx}\,dx,
+    \qquad k = 0, \pm 1, \pm 2, \ldots
+  }
+\end{equation}
+
+\begin{intuizione}
+Passando al periodo $T$ generico, la ``risoluzione frequenziale'' diventa
+$\Delta\omega = 2\pi/T$: più grande è il periodo, più fitte sono le frequenze
+presenti nella serie. Nel limite $T \to \infty$ la somma discreta diventa un
+integrale continuo, e si ottiene la \emph{Trasformata di Fourier}.
+\end{intuizione}
+
+% ============================================================
+%  24. Fattorizzazione LU diretta
+% ============================================================
+\section{Fattorizzazione LU: approccio diretto}
+
+\subsection{Contesto}
+
+La fattorizzazione LU fa parte delle \textbf{fattorizzazioni dirette}, ovvero quelle
+tecniche che decompongono $A$ nel prodotto di due matrici strutturate senza simulare
+l'eliminazione gaussiana. Si scrive $A = LU$, dove:
+\begin{itemize}
+  \item $L$ è la matrice \textbf{triangolare inferiore} (LOWER) con \textbf{diagonale
+        unitaria} ($l_{ii} = 1$).
+  \item $U$ è la matrice \textbf{triangolare superiore} (UPPER).
+\end{itemize}
+\textbf{Condizione di applicabilità:} tutte le sottomatrici principali di testa di $A$
+devono avere determinante non nullo ($\det A_k \neq 0$ per $k = 1, \ldots, n$).
+
+\subsection{Conteggio degli elementi e scelta della diagonale unitaria}
+
+Partiamo dall'uguaglianza $A = LU$ e contiamo le incognite:
+\begin{itemize}
+  \item $L$ è triangolare inferiore $n \times n$: il numero di elementi è
+        $\displaystyle\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$.
+  \item $U$ è triangolare superiore $n \times n$: il numero di elementi è
+        $\displaystyle\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$.
+\end{itemize}
+Sommando si ottengono $n^2 + n$ incognite totali, ma $A$ fornisce soltanto $n^2$
+equazioni. Il sistema è quindi sovradeterminato di $n$ unità. Per risolvere
+l'ambiguità, si \textbf{fissa la diagonale di $L$ uguale a 1}:
+\[
+  l_{11} = l_{22} = \cdots = l_{nn} = 1.
+\]
+In questo modo si rimuovono $n$ incognite, riportando il totale a $n^2$ incognite
+e $n^2$ equazioni: il sistema è quadrato e (sotto le ipotesi di applicabilità)
+ha soluzione unica.
+
+\subsection{Calcolo esplicito delle entrate di $L$ e $U$}
+
+Imponiamo $A = LU$ tramite il prodotto righe-per-colonne. Consideriamo la prima
+riga di $A$:
+\[
+  a_{1j}
+    = \underbrace{l_{11}}_{=1}\cdot u_{1j}
+      + \underbrace{l_{12}}_{=0}\cdot u_{2j}
+      + \cdots
+      + \underbrace{l_{1n}}_{=0}\cdot u_{nj}
+    = u_{1j},
+\]
+quindi \textbf{la prima riga di $U$ coincide con la prima riga di $A$}:
+$u_{1j} = a_{1j}$ per $j = 1, \ldots, n$.
+
+Procedendo riga per riga con $i = 1, 2, \ldots, n$, si derivano le formule generali.
+
+\paragraph{Elementi di $U$ (colonna $j \ge i$, cioè la parte alta).}
+L'equazione $(i,j)$ del prodotto $LU$ è:
+\[
+  a_{ij}
+    = \sum_{k=1}^{n} l_{ik}\,u_{kj}
+    = \underbrace{\sum_{k=1}^{i-1} l_{ik}\,u_{kj}}_{\text{già noti}}
+      + \underbrace{l_{ii}}_{=1}\,u_{ij}
+      + \underbrace{\sum_{k=i+1}^{n} l_{ik}\,u_{kj}}_{=0,\; l_{ik}=0\text{ per }k>i}.
+\]
+Isolando $u_{ij}$:
+\begin{equation}
+  \boxed{
+    u_{ij} = a_{ij} - \sum_{k=1}^{i-1} l_{ik}\,u_{kj},
+    \qquad j = i, \ldots, n.
+  }
+\end{equation}
+
+\paragraph{Elementi di $L$ (colonna $j < i$, cioè la parte bassa).}
+L'equazione $(i,j)$ del prodotto $LU$ (con $j < i$) è:
+\[
+  a_{ij}
+    = \sum_{k=1}^{n} l_{ik}\,u_{kj}
+    = \underbrace{\sum_{k=1}^{j-1} l_{ik}\,u_{kj}}_{\text{già noti}}
+      + l_{ij}\,u_{jj}
+      + \underbrace{\sum_{k=j+1}^{n} l_{ik}\,u_{kj}}_{=0,\; u_{kj}=0\text{ per }k>j}.
+\]
+Isolando $l_{ij}$:
+\begin{equation}
+  \boxed{
+    l_{ij} = \frac{\displaystyle a_{ij} - \sum_{k=1}^{j-1} l_{ik}\,u_{kj}}{u_{jj}},
+    \qquad j = 1, \ldots, i-1.
+  }
+\end{equation}
+Si noti che $u_{jj} \neq 0$ per ipotesi (le sottomatrici principali di testa sono
+non singolari).
+
+\subsection{Algoritmo riepilogativo}
+
+Si procede riga per riga, da $i = 1$ a $i = n$:
+\begin{enumerate}
+  \item \textbf{Calcola gli elementi di $U$ sulla riga $i$} (colonne da $i$ a $n$):
+        \[
+          u_{ij} = a_{ij} - \sum_{k=1}^{i-1} l_{ik}\,u_{kj}, \quad j = i, \ldots, n.
+        \]
+  \item \textbf{Calcola gli elementi di $L$ sulla colonna $i$} (righe da $i+1$ a $n$):
+        \[
+          l_{ji} = \frac{a_{ji} - \displaystyle\sum_{k=1}^{i-1} l_{jk}\,u_{ki}}{u_{ii}},
+          \quad j = i+1, \ldots, n.
+        \]
+\end{enumerate}
+Il costo computazionale complessivo è $O(n^3/3)$, identico al Metodo di
+Eliminazione di Gauss.
+
+\begin{intuizione}
+L'approccio diretto rivela che $A = LU$ è un sistema di $n^2$ equazioni nelle
+$n^2$ incognite libere (gli elementi di $L$ e $U$ non prefissati). La struttura
+triangolare garantisce che le equazioni possano essere risolte \emph{in cascata}:
+prima la prima riga di $U$, poi la prima colonna di $L$ sotto la diagonale, poi la
+seconda riga di $U$, e così via. Questo ordine sequenziale è esattamente quello
+sfruttato dall'algoritmo.
+\end{intuizione}
+
+\begin{osservazione}[Collegamento con il MEG]
+Le due formule ricavate sopra sono algebricamente equivalenti a quelle prodotte
+dall'eliminazione gaussiana. La differenza è solo nella prospettiva: il MEG modifica
+$A$ in avanti producendo $U$ tramite operazioni elementari e registra i moltiplicatori
+in $L$; la fattorizzazione diretta risolve esplicitamente le equazioni del prodotto
+$LU = A$. Entrambi gli approcci producono la stessa coppia $(L, U)$.
+\end{osservazione}
+
 \end{document}
 
 
